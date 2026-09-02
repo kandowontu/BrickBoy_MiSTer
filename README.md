@@ -1,6 +1,6 @@
 # BrickBoy MiSTer
 
-BrickBoy MiSTer brings the DMG LCD panel and sealed-speaker model from [kathoc/brickboy-dmg-fpgacore](https://github.com/kathoc/brickboy-dmg-fpgacore) to the MiSTer FPGA platform. The core uses the current [MiSTer-devel/Gameboy_MiSTer](https://github.com/MiSTer-devel/Gameboy_MiSTer) framework and a dedicated `BRICKBOY` internal identifier, so its settings do not collide with the standard Game Boy core.
+BrickBoy MiSTer brings the DMG LCD panel and sealed-speaker model from [kathoc/brickboy-dmg-fpgacore](https://github.com/kathoc/brickboy-dmg-fpgacore) to the MiSTer FPGA platform. The core uses the current [MiSTer-devel/Gameboy_MiSTer](https://github.com/MiSTer-devel/Gameboy_MiSTer) framework. Its MiSTer content identifier remains `GAMEBOY`, so ROMs, palettes, borders, boot ROMs, and saves use the existing `Gameboy` folder.
 
 ## Install
 
@@ -32,7 +32,7 @@ Quartus Prime Lite 17.0 is the validated toolchain:
 quartus_sh --flow compile Gameboy
 ```
 
-The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy_YYYYMMDD.rbf`.
+The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy.rbf`; the build date is shown inside the MiSTer core menu.
 
 The first public build was fitted and timed successfully and tested on a DE10-Nano over HDMI.
 

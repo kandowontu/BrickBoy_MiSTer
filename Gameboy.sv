@@ -56,7 +56,7 @@ assign AUDIO_MIX = status[8:7];
 
 `include "build_id.v" 
 localparam CONF_STR = {
-	"BRICKBOY;SS3E000000:40000;",
+	"GAMEBOY;SS3E000000:40000;",
 	"FS1,GBCGB BIN,Load ROM;",
 	"OEF,System,Auto,Gameboy,Gameboy Color,MegaDuck;",
 	"D7o79,Mapper,Auto,WisdomTree,Mani161,MBC1,MBC3;",
