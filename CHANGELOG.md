@@ -12,6 +12,8 @@
   grain. Each control defaults to the exact profile value.
 - Reduce Vinegar coverage storage from 96 to 72 bits per cell, recovering 72
   M10Ks while retaining the original geometry and seeded patterns.
+- Add a `BrickBoy Detail` page for dot fill, gap darkness, and persistence gate
+  controls, all defaulting to the source profile values.
 
 ## 0.3.0 - 2026-09-02
 
