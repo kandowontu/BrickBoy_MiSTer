@@ -58,6 +58,10 @@ module brick_video (
 	input  wire [1:0]  set_fill,
 	input  wire [1:0]  set_gap,
 	input  wire [1:0]  set_gate,
+	input  wire [1:0]  set_dimming,
+	input  wire [1:0]  set_frontlight,
+	input  wire [1:0]  set_backlight,
+	input  wire [1:0]  set_contrast_fade,
 
 	output reg         hs,
 	output reg         vs,
@@ -360,6 +364,19 @@ brick_grid grid (
 // ahead of the panel under it. Both terms vary over the whole screen and the
 // matte grain is white noise, so nothing about that is observable; delaying
 // two 10-bit counters through the grid pipeline would cost more than it buys.
+wire [23:0] aging_rgb;
+brick_aging aging (
+	.clk           ( clk_sys ),
+	.gx            ( h_pre - GX0 ),
+	.gy            ( v - GY0 ),
+	.dimming       ( set_dimming ),
+	.frontlight    ( set_frontlight ),
+	.backlight     ( set_backlight ),
+	.contrast_fade ( set_contrast_fade ),
+	.in_rgb        ( grid_rgb ),
+	.out_rgb       ( aging_rgb )
+);
+
 wire [23:0] vinegar_rgb;
 brick_vinegar vinegar (
 	.clk       ( clk_sys       ),
@@ -367,7 +384,7 @@ brick_vinegar vinegar (
 	.gy        ( v - GY0       ),
 	.depth     ( set_vinegar   ),
 	.blob_mode ( set_rot_blob  ),
-	.in_rgb    ( grid_rgb      ),
+	.in_rgb    ( aging_rgb     ),
 	.out_rgb   ( vinegar_rgb   )
 );
 
@@ -389,13 +406,13 @@ brick_finish finish (
 	.out_rgb ( fin_rgb  )
 );
 
-// brick_grid adds 6 cycles, brick_vinegar 3 and brick_finish 6.
-reg [14:0] game_dly;
-always @(posedge clk_sys) game_dly <= {game_dly[13:0], p4_game};
+// brick_grid adds 6 cycles, brick_aging 3, brick_vinegar 3 and brick_finish 6.
+reg [17:0] game_dly;
+always @(posedge clk_sys) game_dly <= {game_dly[16:0], p4_game};
 
 always @(posedge clk_sys) begin
-	de  <= game_dly[14];
-	rgb <= game_dly[14] ? fin_rgb : 24'h000000;
+	de  <= game_dly[17];
+	rgb <= game_dly[17] ? fin_rgb : 24'h000000;
 
 	// MiSTer's scaler expects level-width sync pulses. The Pocket target accepts
 	// one-clock strobes, but a 30 ns VS strobe can be missed by the HDMI path.

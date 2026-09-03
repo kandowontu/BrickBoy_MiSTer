@@ -4,7 +4,8 @@ BrickBoy MiSTer brings the DMG LCD panel and sealed-speaker model from [kathoc/b
 
 ## Install
 
-Download the newest dated RBF from [`releases/`](releases/) or the repository's GitHub Releases page and copy it to `/media/fat/_Console/`.
+Download [`BrickBoy.rbf`](releases/BrickBoy.rbf) or the newest build from the
+repository's GitHub Releases page and copy it to `/media/fat/_Console/`.
 
 ## Panel model
 
@@ -31,6 +32,12 @@ the original geometry, seed, patterns, and depth curves.
 The `BrickBoy Detail` page adds source-stage controls for dot fill, gap
 darkness, and the persistence luminance gate. Their `Original` choices retain
 the reference renderer values.
+
+The `BrickBoy Aging` page exposes the original panel dimming, frontlight
+gradient, backlight edge bleed, and contrast-fade stages. The four-position
+controls sample the continuous source parameters at 0, 0.25, 0.5, and 1.0;
+`Original` is zero, as in the reference profile. The edge smoothstep is a
+16-entry fixed-point lookup approximation of the published shader formula.
 
 ## Compatibility
 

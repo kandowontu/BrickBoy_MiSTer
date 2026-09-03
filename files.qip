@@ -48,6 +48,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_ghost.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_grain.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_grid.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_vinegar.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_aging.sv
 set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map.hex
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_video.sv
 set_global_assignment -name VERILOG_FILE rtl/mappers/sachen.v
