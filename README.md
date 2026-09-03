@@ -72,8 +72,8 @@ quartus_sh --flow compile Gameboy
 
 The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy.rbf`; the build date is shown inside the MiSTer core menu.
 
-The current candidate uses 28,714 ALMs, 471 of 553 RAM blocks, and 83 DSP
-blocks. Quartus reports +0.212 ns worst-case setup slack and +0.251 ns
+The current candidate uses 28,688 ALMs, 471 of 553 RAM blocks, and 83 DSP
+blocks. Quartus reports +0.376 ns worst-case setup slack and +0.185 ns
 worst-case hold slack. The first public build was also tested on a DE10-Nano
 over HDMI; this candidate still requires hardware testing.
 

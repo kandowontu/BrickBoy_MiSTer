@@ -330,6 +330,7 @@ brick_grain grain_gen (
 	.gx   ( h_pre - GX0[9:0] ),
 	.gy   ( v - GY0[9:0]     ),
 	.seed ( 8'd7           ),   // dmg.json defects.seed
+	.contrast ( set_grain  ),
 	.g    ( grain_q        )
 );
 

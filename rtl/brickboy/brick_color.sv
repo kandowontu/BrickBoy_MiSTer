@@ -325,8 +325,13 @@ always @(posedge clk) begin
 			state <= S_PF0;
 		end else if (row_tick) begin
 			for (int i = 0; i < 160; i++) begin
+				`ifdef VERILATOR
+				row_up[i]  = row_cur[i];
+				row_cur[i] = row_dn[i];
+				`else
 				row_up[i]  <= row_cur[i];
 				row_cur[i] <= row_dn[i];
+				`endif
 			end
 			cur_row <= row_disp + 8'd1;
 			first_frame_row <= 1'b0;
@@ -339,8 +344,13 @@ always @(posedge clk) begin
 			up_lat <= 0;
 			fb_addr <= fbaddr(8'd143, 8'd0);
 			for (int i = 0; i < 160; i++) begin
+				`ifdef VERILATOR
+				colU[i]  = 14'd0;
+				up_hi[i] = 8'd0;
+				`else
 				colU[i]  <= 14'd0;
 				up_hi[i] <= 8'd0;      // U at row 144, off the bottom
+				`endif
 			end
 			state <= S_UP;
 		end
