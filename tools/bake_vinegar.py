@@ -2,7 +2,7 @@
 
 The equations and constants are a direct evaluation of FRAG_DEFECTS from
 kathoc/brickboy-dmg-shader.  Three MiSTer menu depths are sampled (0.25, 0.50,
-1.00), for both original rot modes.  Each native cell stores its four 4-bit
+1.00), for both original rot modes.  Each native cell stores its four 3-bit
 corner opacities; RTL bilinearly expands them across the 4x4 output cell.
 """
 import math
@@ -70,7 +70,10 @@ def opacity(px, py, depth, mode):
             cover = max(cover, 1.0 - smoothstep(rad * 0.55, rad,
                                                 math.hypot(dx, dy)))
     op = cover * (0.45 + 0.5 * cover) * clamp(depth * 1.3, 0.0, 0.94)
-    return int(round(clamp(op, 0.0, 0.94) * 15.0 / 0.94))
+    # Three stored bits are expanded back onto the original 0..15 opacity
+    # lattice in RTL. This preserves the exact endpoints and bounds the added
+    # coverage error to half of one 3-bit step (~3.4% opacity).
+    return int(round(clamp(op, 0.0, 0.94) * 7.0 / 0.94))
 
 
 def main():
@@ -82,19 +85,19 @@ def main():
                      for y in range(H + 1)]
             for y in range(H):
                 for x in range(W):
-                    maps.append(nodes[y][x] | (nodes[y][x + 1] << 4) |
-                                (nodes[y + 1][x] << 8) |
-                                (nodes[y + 1][x + 1] << 12))
+                    maps.append(nodes[y][x] | (nodes[y][x + 1] << 3) |
+                                (nodes[y + 1][x] << 6) |
+                                (nodes[y + 1][x + 1] << 9))
     out = Path(__file__).parents[1] / "rtl" / "brickboy" / "brick_vinegar_map.hex"
     with out.open("w", newline="\n") as f:
-        # Keep map selection in the WORD rather than the DEPTH.  A 23040x96
+        # Keep map selection in the WORD rather than the DEPTH.  A 23040x72
         # ROM maps directly into parallel M10Ks; a 138240x16 ROM requires a
         # very large bank decoder on Cyclone V even though the bit count is
         # identical.
         for cell in range(W * H):
-            word = sum(maps[m * W * H + cell] << (16 * m) for m in range(6))
-            f.write(f"{word:024x}\n")
-    print(f"wrote {W * H} 96-bit words to {out}")
+            word = sum(maps[m * W * H + cell] << (12 * m) for m in range(6))
+            f.write(f"{word:018x}\n")
+    print(f"wrote {W * H} 72-bit words to {out}")
 
 
 if __name__ == "__main__":

@@ -37,6 +37,9 @@ the RTL; the missing item is menu adjustability, not necessarily the effect.
   original DMG profile.
 - Module margin/mask trim is clipped in the default Fill presentation.
 - Persistence is stored at native resolution to fit FPGA memory.
+- Vinegar coverage corners are stored at 3-bit precision and expanded onto the
+  original opacity lattice to save 72 M10Ks; geometry and seeded patterns are
+  unchanged.
 - Dead lines are substituted before the grid so they remain electrode-shaped;
   their optional flicker control is a MiSTer extension.
 - MiSTer panel trim, ink, reflector-saturation, rumble, and physical-controller

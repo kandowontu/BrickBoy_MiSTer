@@ -24,6 +24,10 @@ The `BrickBoy Optics` page exposes original grid strength, drop-shadow
 opacity, LCD persistence, reflection gradient, corner vignette, and matte
 grain. Every setting defaults to `Original`, preserving the profile values.
 
+The Vinegar coverage ROM uses three bits per corner sample, expanded onto the
+same 0–15 opacity lattice in hardware. This saves 72 M10Ks while preserving
+the original geometry, seed, patterns, and depth curves.
+
 ## Compatibility
 
 The BrickBoy renderer consumes the Game Boy's two-bit DMG LCD stream. GBC software is therefore displayed through the DMG panel model rather than the normal colour renderer. SGB borders and MiSTer's normal video filters are not currently composited into the BrickBoy output.
