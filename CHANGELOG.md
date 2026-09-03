@@ -14,6 +14,9 @@
   M10Ks while retaining the original geometry and seeded patterns.
 - Add a `BrickBoy Detail` page for dot fill, gap darkness, and persistence gate
   controls, all defaulting to the source profile values.
+- Add a `BrickBoy Aging` page for the original panel dimming, frontlight
+  gradient, backlight edge bleed, and contrast-fade stages. Each four-position
+  control samples the source parameter and defaults to the original zero value.
 
 ## 0.3.0 - 2026-09-02
 

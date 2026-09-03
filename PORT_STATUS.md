@@ -17,6 +17,8 @@ from the original BrickBoy software renderer.
   final gradient, matte grain, and vignette (all default to Original)
 - menu controls for dot fill, gap darkness, and ghost gate (all default to
   Original)
+- panel dimming, frontlight gradient, backlight edge bleed, and contrast fade,
+  with four source-parameter samples and Original defaults
 - dead vertical and horizontal electrode lines (hardware-adapted placement)
 - Vinegar Syndrome centre-superellipse and blob patterns
 - sealed-speaker/case audio model
@@ -27,7 +29,7 @@ from the original BrickBoy software renderer.
 - ghost gamma and gate
 - panel brightness, contrast, saturation, gamma, black lift, contrast dial,
   STN bleed, crosstalk amount/noise/banding, and cold-temperature response
-- panel dimming, frontlight gradient, backlight bleed, contrast fade, and dust
+- panel dust
 - dead-line edge bias, stuck-dark ratio, and row ratio
 
 These effects are present at their BrickBoy profile defaults where noted in
@@ -42,6 +44,8 @@ the RTL; the missing item is menu adjustability, not necessarily the effect.
 - Vinegar coverage corners are stored at 3-bit precision and expanded onto the
   original opacity lattice to save 72 M10Ks; geometry and seeded patterns are
   unchanged.
+- Backlight edge smoothstep uses a 16-entry fixed-point lookup table sampled
+  from the original formula.
 - Dead lines are substituted before the grid so they remain electrode-shaped;
   their optional flicker control is a MiSTer extension.
 - MiSTer panel trim, ink, reflector-saturation, rumble, and physical-controller
