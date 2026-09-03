@@ -63,6 +63,23 @@ module brick_video (
 	input  wire [1:0]  set_backlight,
 	input  wire [1:0]  set_contrast_fade,
 	input  wire [1:0]  set_dust,
+	input  wire [1:0]  set_brightness,
+	input  wire [1:0]  set_contrast,
+	input  wire [1:0]  set_saturation,
+	input  wire [1:0]  set_gamma,
+	input  wire [1:0]  set_blacklift,
+	input  wire [1:0]  set_density,
+	input  wire [1:0]  set_bleed,
+	input  wire [1:0]  set_xtalk,
+	input  wire [1:0]  set_xtnoise,
+	input  wire [1:0]  set_xtedge,
+	input  wire [1:0]  set_cold,
+	input  wire [1:0]  set_depth,
+	input  wire [1:0]  set_blur,
+	input  wire [1:0]  set_ghost_gamma,
+	input  wire [1:0]  set_dead_edge,
+	input  wire [1:0]  set_dead_lit,
+	input  wire [1:0]  set_dead_rows,
 
 	output reg         hs,
 	output reg         vs,
@@ -152,6 +169,17 @@ brick_color color (
 	.row_disp    ( disp_row     ),
 	.set_offtint ( set_offtint  ),
 	.set_real    ( set_real     ),
+	.set_brightness(set_brightness),
+	.set_contrast( set_contrast ),
+	.set_saturation(set_saturation),
+	.set_gamma   ( set_gamma    ),
+	.set_blacklift(set_blacklift),
+	.set_density ( set_density  ),
+	.set_bleed   ( set_bleed    ),
+	.set_xtalk   ( set_xtalk    ),
+	.set_xtnoise ( set_xtnoise  ),
+	.set_xtedge  ( set_xtedge   ),
+	.set_cold    ( set_cold     ),
 	.fb_addr     ( col_fb_addr  ),
 	.fb_q        ( col_fb_q     ),
 	.lb_waddr    ( cc_x         ),
@@ -175,6 +203,8 @@ brick_ghost ghost (
 	.in_rgb  ( cc_rgb  ),
 	.strength( set_ghost ),
 	.gate   ( set_gate ),
+	.gamma  ( set_ghost_gamma ),
+	.cold   ( set_cold ),
 	.out_v   ( gh_v    ),
 	.out_x   ( gh_x    ),
 	.out_rgb ( gh_rgb  )
@@ -250,7 +280,8 @@ always @(*) begin
 	case (sx_now)
 		2'd0: begin dk_addr = {ny[2:0] - 3'd1, nxn - 8'd1}; dk_ok = (ny >= 8'd1) && (nxn >= 8'd1); end
 		2'd1: begin dk_addr = {ny[2:0] - 3'd2, nxn - 8'd2}; dk_ok = (ny >= 8'd2) && (nxn >= 8'd2); end
-		default: begin dk_addr = {ny[2:0] - 3'd3, nxn - 8'd3}; dk_ok = (ny >= 8'd3) && (nxn >= 8'd3); end
+		2'd2: begin dk_addr = {ny[2:0] - 3'd3, nxn - 8'd3}; dk_ok = (ny >= 8'd3) && (nxn >= 8'd3); end
+		default: begin dk_addr = {ny[2:0] - 3'd4, nxn - 8'd4}; dk_ok = (ny >= 8'd4) && (nxn >= 8'd4); end
 	endcase
 end
 
@@ -273,8 +304,12 @@ always @(posedge clk_sys) begin
 		2'd1: t_far1 <= dk_v;
 		2'd2: t_far2 <= dk_v;
 		default: begin
-			near_d <= t_near;
-			far_d  <= ({1'b0, t_far1} + {1'b0, t_far2}) >> 1;
+			case (set_depth)
+				2'd0: begin near_d <= t_near; far_d <= ({1'b0,t_far1}+{1'b0,t_far2}) >> 1; end
+				2'd1: begin near_d <= t_near; far_d <= t_far1; end
+				2'd2: begin near_d <= t_far1; far_d <= ({1'b0,t_far2}+{1'b0,dk_v}) >> 1; end
+				default: begin near_d <= t_far2; far_d <= dk_v; end
+			endcase
 		end
 	endcase
 end
@@ -323,6 +358,9 @@ brick_deadline deadline (
 	.clk     ( clk_sys      ),
 	.sev     ( set_deadline ),
 	.flicker ( set_flicker  ),
+	.edge_bias(set_dead_edge),
+	.lit_ratio(set_dead_lit),
+	.row_ratio(set_dead_rows),
 	.phase   ( frame_phase  ),
 	.nx      ( nx           ),
 	.ny      ( ny           ),
@@ -353,6 +391,7 @@ brick_grid grid (
 	.set_shadow ( set_shadow ),
 	.set_fill ( set_fill ),
 	.set_gap ( set_gap ),
+	.set_blur ( set_blur ),
 	.out_rgb  ( grid_rgb )
 );
 

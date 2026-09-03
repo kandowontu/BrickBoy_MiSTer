@@ -41,6 +41,23 @@ smoothstep is a 16-entry fixed-point lookup approximation of the published
 shader formula. Dust uses the original seed-7 hash, native 160x144 cell map,
 thresholds, and quarter-brightness response.
 
+The `BrickBoy Colour` and `BrickBoy STN` pages expose the remaining source
+panel parameters: brightness, contrast, saturation, panel gamma, black lift,
+contrast dial, STN bleed, crosstalk amount, column noise, edge banding, and
+cold-temperature response. Each control provides four useful samples and
+defaults to the reference profile value.
+
+The `BrickBoy Optics II` page adds air-gap depth, shadow softness, and ghost
+gamma. Air-gap depth and softness are discrete FPGA adaptations of the
+source renderer's continuous caster geometry and blur; `Original` preserves
+the reference appearance. Ghost gamma uses exact forward curves and a
+512-sample linearly interpolated inverse curve for each menu choice.
+
+The `BrickBoy Dead Lines` page exposes edge bias, stuck-dark ratio, and row
+rate. Its deterministic column and row masks are generated from the original
+BrickBoy salts and formulas; rows intentionally do not use edge bias, matching
+the source renderer.
+
 ## Compatibility
 
 The BrickBoy renderer consumes the Game Boy's two-bit DMG LCD stream. GBC software is therefore displayed through the DMG panel model rather than the normal colour renderer. SGB borders and MiSTer's normal video filters are not currently composited into the BrickBoy output.
@@ -55,7 +72,10 @@ quartus_sh --flow compile Gameboy
 
 The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy.rbf`; the build date is shown inside the MiSTer core menu.
 
-The first public build was fitted and timed successfully and tested on a DE10-Nano over HDMI.
+The current candidate uses 28,714 ALMs, 471 of 553 RAM blocks, and 83 DSP
+blocks. Quartus reports +0.212 ns worst-case setup slack and +0.251 ns
+worst-case hold slack. The first public build was also tested on a DE10-Nano
+over HDMI; this candidate still requires hardware testing.
 
 ## Source and licensing
 

@@ -31,6 +31,9 @@ module brick_deadline (
 
 	input  wire [2:0]  sev,          // severity dial, 0 = none
 	input  wire [1:0]  flicker,      // 0 stable, 1..3 increasing instability
+	input  wire [1:0]  edge_bias,
+	input  wire [1:0]  lit_ratio,
+	input  wire [1:0]  row_ratio,
 	input  wire [7:0]  phase,        // advances once per displayed frame
 	input  wire [7:0]  nx,           // native column 0..159
 	input  wire [7:0]  ny,           // native row 0..143
@@ -43,6 +46,10 @@ module brick_deadline (
 `include "brick_dl_row.svh"
 `include "brick_dl_col_st.svh"
 `include "brick_dl_row_st.svh"
+`include "brick_dl_col_opt.svh"
+`include "brick_dl_row_opt.svh"
+`include "brick_dl_col_lit_opt.svh"
+`include "brick_dl_row_lit_opt.svh"
 
 // The un-driven reflector, and the colour stage's darkest output for the few
 // lines that settle stuck-on. brickboy uses uReflector and uDmgPalette[3]; the
@@ -66,8 +73,8 @@ reg [23:0] c0;
 reg [7:0]  pos_col, pos_row;
 
 always @(posedge clk) begin
-	d_col  <= DL_COL_DEAD[sev][nx];
-	d_row  <= DL_ROW_DEAD[sev][ny];
+	d_col  <= DL_COL_OPT[{edge_bias,sev[1:0]}][nx];
+	d_row  <= DL_ROW_OPT[{edge_bias,row_ratio,sev[1:0]}][ny];
 	st_col <= DL_COL_ST[nx];
 	st_row <= DL_ROW_ST[ny];
 	// Position ALONG each line, for the contact-resistance gradient: a column
@@ -129,8 +136,8 @@ always @(posedge clk) begin
 	// drop (0.86..1.0) x gradient
 	k_col   <= (flicker == 0) ? kb_col : kf_col[15:8];
 	k_row   <= (flicker == 0) ? kb_row : kf_row[15:8];
-	lit_col <= st_col[7];
-	lit_row <= st_row[7];
+	lit_col <= DL_COL_LIT_OPT[lit_ratio][pos_row];
+	lit_row <= DL_ROW_LIT_OPT[lit_ratio][pos_col];
 	c1      <= c0;
 end
 
