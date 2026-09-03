@@ -10,6 +10,8 @@
 - Add a `BrickBoy Optics` menu page for original grid strength, drop-shadow
   opacity, LCD persistence, reflection gradient, corner vignette, and matte
   grain. Each control defaults to the exact profile value.
+- Reduce Vinegar coverage storage from 96 to 72 bits per cell, recovering 72
+  M10Ks while retaining the original geometry and seeded patterns.
 
 ## 0.3.0 - 2026-09-02
 

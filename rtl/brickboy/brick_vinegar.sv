@@ -4,7 +4,7 @@
 // an independently designed look. tools/bake_vinegar.py evaluates Kathoc's
 // four-octave fBm, superellipse/blob geometry, seed 7, coverage curve and
 // opacity curve.  The six maps are three depths for each original pattern.
-// Four 4-bit node samples are packed per native LCD cell and bilinearly
+// Four 3-bit node samples are packed per native LCD cell and bilinearly
 // expanded across its 4x4 output pixels here. The original rot colour is
 // (0.11, 0.07, 0.14), or RGB888 (28,18,36).
 
@@ -19,7 +19,7 @@ module brick_vinegar (
 );
 
 localparam int CELLS = 160 * 144;
-reg [95:0] map[0:CELLS-1];
+reg [71:0] map[0:CELLS-1];
 initial $readmemh("rtl/brickboy/brick_vinegar_map.hex", map);
 
 wire [7:0] nx = gx[9:2];
@@ -30,7 +30,7 @@ wire [2:0] map_no = (depth == 0) ? 3'd0 :
 	                 (blob_mode ? 3'd3 : 3'd0) + {1'b0, depth} - 3'd1;
 wire [14:0] addr = ny * 160 + nx;
 
-reg [95:0] q0;
+reg [71:0] q0;
 reg [1:0] sx0, sy0;
 reg [1:0] depth0;
 reg [2:0] map_no0;
@@ -44,22 +44,35 @@ always @(posedge clk) begin
 	c0 <= in_rgb;
 end
 
-reg [15:0] corners;
+reg [11:0] corners;
 always @(*) begin
 	case (map_no0)
-		3'd0: corners = q0[15:0];
-		3'd1: corners = q0[31:16];
-		3'd2: corners = q0[47:32];
-		3'd3: corners = q0[63:48];
-		3'd4: corners = q0[79:64];
-		default: corners = q0[95:80];
+		3'd0: corners = q0[11:0];
+		3'd1: corners = q0[23:12];
+		3'd2: corners = q0[35:24];
+		3'd3: corners = q0[47:36];
+		3'd4: corners = q0[59:48];
+		default: corners = q0[71:60];
 	endcase
 end
 
-wire signed [5:0] a = $signed({2'b00, corners[3:0]});
-wire signed [5:0] b = $signed({2'b00, corners[7:4]});
-wire signed [5:0] c = $signed({2'b00, corners[11:8]});
-wire signed [5:0] d = $signed({2'b00, corners[15:12]});
+function automatic [3:0] expand3(input [2:0] v);
+	case (v)
+		3'd0: expand3 = 4'd0;
+		3'd1: expand3 = 4'd2;
+		3'd2: expand3 = 4'd4;
+		3'd3: expand3 = 4'd6;
+		3'd4: expand3 = 4'd9;
+		3'd5: expand3 = 4'd11;
+		3'd6: expand3 = 4'd13;
+		default: expand3 = 4'd15;
+	endcase
+endfunction
+
+wire signed [5:0] a = $signed({2'b00, expand3(corners[2:0])});
+wire signed [5:0] b = $signed({2'b00, expand3(corners[5:3])});
+wire signed [5:0] c = $signed({2'b00, expand3(corners[8:6])});
+wire signed [5:0] d = $signed({2'b00, expand3(corners[11:9])});
 wire signed [7:0] top = (a <<< 2) + (b - a) * $signed({1'b0, sx0});
 wire signed [7:0] bot = (c <<< 2) + (d - c) * $signed({1'b0, sx0});
 wire signed [9:0] op_i = (top <<< 2) + (bot - top) * $signed({1'b0, sy0});
