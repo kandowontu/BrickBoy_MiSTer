@@ -104,6 +104,15 @@ localparam CONF_STR = {
 	"P4OP,Fast Forward Sound,On,Off;",
 	"P4O[30],D-pad,8-way,4-way;",
 
+	"P5,BrickBoy Optics;",
+	"P5-;",
+	"P5O[65:64],Grid Strength,Original,Off,Low,Full;",
+	"P5O[67:66],Shadow Opacity,Original,Off,Half,Strong;",
+	"P5O[69:68],LCD Persistence,Original,Off,Low,High;",
+	"P5O[71:70],Reflection Gradient,Original,Off,Half,Strong;",
+	"P5O[73:72],Corner Vignette,Original,Off,Half,Strong;",
+	"P5O[75:74],Matte Grain,Original,Off,Half,Strong;",
+
     "P2,Bootroms;",
 	"P2-;",
 	"P2FC4,BIN,Load GBC Boot;",
@@ -166,7 +175,7 @@ pll pll
 
 ///////////////////////////////////////////////////
 
-wire [63:0] status;
+wire [127:0] status;
 wire  [1:0] buttons;
 wire        forced_scandoubler;
 wire        direct_video;
@@ -238,7 +247,7 @@ hps_io #(.CONF_STR(CONF_STR), .WIDE(1)) hps_io
         gbc_raw_colors, fastboot_available,
         sys_megaduck, boot_gba_available, sgb_border_en, isGBC,
         cart_ready, sav_supported, |tint, gg_available}),
-	.status_in({status[63:34],ss_slot,status[31:0]}),
+	.status_in({status[127:34],ss_slot,status[31:0]}),
 	.status_set(statusUpdate),
 	.direct_video(direct_video),
 	.gamma_bus(gamma_bus),
@@ -878,6 +887,12 @@ brick_video brick_panel
 	.set_vinegar (status[35:34]),
 	.set_rot_blob (status[11]),
 	.set_flicker  (status[37:36]),
+	.set_grid     (status[65:64]),
+	.set_shadow   (status[67:66]),
+	.set_ghost    (status[69:68]),
+	.set_gradient (status[71:70]),
+	.set_vignette (status[73:72]),
+	.set_matte    (status[75:74]),
 	.hs           (brick_hs),
 	.vs           (brick_vs),
 	.de           (brick_de),

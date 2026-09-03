@@ -34,14 +34,19 @@ module brick_ghost (
 	input  wire [7:0]  in_row,
 	input  wire [7:0]  in_x,
 	input  wire [23:0] in_rgb,
+	input  wire [1:0]  strength, // Original, off, low, high
 
 	output reg         out_v,
 	output reg  [7:0]  out_x,
 	output reg  [23:0] out_rgb
 );
 
-localparam [7:0] A_RISE = 8'd61;    // lightening: relaxation, slow
-localparam [7:0] A_FALL = 8'd139;   // darkening: driven, fast
+wire [7:0] A_RISE = (strength == 2'd0) ? 8'd61 :
+                    (strength == 2'd1) ? 8'd255 :
+                    (strength == 2'd2) ? 8'd100 : 8'd44;
+wire [7:0] A_FALL = (strength == 2'd0) ? 8'd139 :
+                    (strength == 2'd1) ? 8'd255 :
+                    (strength == 2'd2) ? 8'd195 : 8'd106;
 
 localparam bit [15:0] LUT_FWD22[0:255] = '{
   16'd0, 16'd0, 16'd2, 16'd4, 16'd7, 16'd11, 16'd17, 16'd24,

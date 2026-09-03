@@ -38,6 +38,8 @@ module brick_grid (
 	input  wire signed [9:0] grain, // reflector sheet grain, +-127 = +-1
 	input  wire [7:0]  grain_k,      // grain contrast; 8 = brickboy's own
 	input  wire        set_real,     // 0 = nostalgia palette, 1 = measured
+	input  wire [1:0]  set_grid,     // Original, off, low, full
+	input  wire [1:0]  set_shadow,   // Original, off, half, strong
 
 	output reg  [23:0] out_rgb
 );
@@ -74,9 +76,14 @@ wire [7:0] BG_B  = set_real ? 8'd84  : 8'd149;
 wire [7:0] K_BASEA = set_real ? 8'd0   : 8'd26;    // baselineAlpha 0 / 0.10
 // 255, not 256: mix8 shifts by 8, so full strength lands one LSB short of the
 // pure element colour. One level out of 255, against widening mix8 everywhere.
-wire [7:0] K_STR   = set_real ? 8'd255 : 8'd159;   // strength 1.0 / 0.62
+wire [7:0] K_STR_ORIG = set_real ? 8'd255 : 8'd159;
+wire [7:0] K_STR = (set_grid == 2'd0) ? K_STR_ORIG :
+                   (set_grid == 2'd1) ? 8'd0 :
+                   (set_grid == 2'd2) ? 8'd128 : 8'd255;
 localparam [7:0] K_GRIDC  = 8'd243;   // grid contrast 0.95
-localparam [7:0] K_DROP   = 8'd87;    // shadowOpacity 0.34
+wire [7:0] K_DROP = (set_shadow == 2'd0) ? 8'd87 :
+                    (set_shadow == 2'd1) ? 8'd0 :
+                    (set_shadow == 2'd2) ? 8'd44 : 8'd128;
 // shadowColor x255. dmg-real scales dmg.json's by 0.62 to sit against the
 // measured reflector brightness.
 wire [7:0] DROP_R = set_real ? 8'd81 : 8'd101;

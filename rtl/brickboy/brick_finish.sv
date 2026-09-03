@@ -37,6 +37,9 @@ module brick_finish (
 	input  wire [2:0]  set_ink_g,
 	input  wire [2:0]  set_ink_b,
 	input  wire [2:0]  set_refsat,  // reflector desaturation, 0 = off
+	input  wire [1:0]  set_gradient,
+	input  wire [1:0]  set_vignette,
+	input  wire [1:0]  set_matte,
 	input  wire [23:0] in_rgb,
 	output reg  [23:0] out_rgb
 );
@@ -49,9 +52,27 @@ localparam [15:0] HALF = 16'd32768;
 localparam [16:0] SX = 17'd99864;   // 97.5238 * 1024
 localparam [16:0] SY = 17'd110376;  // 107.7895 * 1024
 
-localparam [15:0] K_GRAD = 16'd10486;   // 0.08 * 2 in Q0.16
-localparam [15:0] K_VIGN = 16'd10486;   // 0.08 * 2
-localparam [7:0]  K_FGRAIN = 8'd3;      // 0.012 * 255
+function automatic [15:0] finish_level(input [1:0] i);
+	case (i)
+		2'd0: finish_level = 16'd10486; // original 0.08 * 2
+		2'd1: finish_level = 16'd0;
+		2'd2: finish_level = 16'd5243;
+		default: finish_level = 16'd15729;
+	endcase
+endfunction
+
+function automatic [7:0] matte_level(input [1:0] i);
+	case (i)
+		2'd0: matte_level = 8'd3; // original 0.012 * 255
+		2'd1: matte_level = 8'd0;
+		2'd2: matte_level = 8'd2;
+		default: matte_level = 8'd6;
+	endcase
+endfunction
+
+wire [15:0] K_GRAD = finish_level(set_gradient);
+wire [15:0] K_VIGN = finish_level(set_vignette);
+wire [7:0]  K_FGRAIN = matte_level(set_matte);
 
 // sqrt(x) for x in [0,1), Q0.16 in and out, indexed by the top 8 bits.
 localparam bit [15:0] LUT_SQRT[0:255] = '{
