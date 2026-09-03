@@ -27,8 +27,10 @@
   original deterministic salts and formulas. Correct the earlier row-mask
   shortcut so rows no longer inherit column salts or edge bias.
 - Fit and time the complete candidate successfully in Quartus Prime Lite 17.0
-  at 28,714 ALMs, 471 RAM blocks, and 83 DSP blocks, with positive setup and
+  at 28,688 ALMs, 471 RAM blocks, and 83 DSP blocks, with positive setup and
   hold slack.
+- Connect the existing reflector-grain menu level to the grain generator and
+  widen its gain path so the 2x, 3x, and 4x choices no longer wrap.
 
 ## 0.3.0 - 2026-09-02
 

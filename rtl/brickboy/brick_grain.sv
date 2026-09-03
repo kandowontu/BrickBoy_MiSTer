@@ -170,20 +170,20 @@ wire signed [8:0]  mid    = $signed({1'b0, m3[31:24]}) - 9'sd128;
 // and the coarse band alone varies far too slowly to dither that. With the fast
 // bands off it posterises into flat plateaus of -1, 0 and +1 - contour bands the
 // size of the blotches, which is the camouflage.
-function automatic [8:0] band_gain(input [2:0] i);
+function automatic [9:0] band_gain(input [2:0] i);
 	case (i)
-		3'd0: band_gain = 9'd0;     // off
-		3'd1: band_gain = 9'd128;   // half
-		3'd2: band_gain = 9'd256;   // brickboy's own
-		3'd3: band_gain = 9'd384;
-		3'd4: band_gain = 9'd512;   // 2x
-		3'd5: band_gain = 9'd768;   // 3x
-		3'd6: band_gain = 9'd1023;  // 4x
-		3'd7: band_gain = 9'd1023;
+		3'd0: band_gain = 10'd0;     // off
+		3'd1: band_gain = 10'd128;   // half
+		3'd2: band_gain = 10'd256;   // brickboy's own
+		3'd3: band_gain = 10'd384;
+		3'd4: band_gain = 10'd512;   // 2x
+		3'd5: band_gain = 10'd768;   // 3x
+		3'd6: band_gain = 10'd1023;  // 4x
+		3'd7: band_gain = 10'd1023;
 	endcase
 endfunction
 
-wire [9:0] bg = {1'b0, band_gain(contrast)};
+wire [9:0] bg = band_gain(contrast);
 wire [9:0] cg = (bg > 10'd256) ? 10'd256 : bg;   // coarse stops at brickboy's
 
 wire signed [17:0] fine_s = fine * $signed({1'b0, K_FINE});
