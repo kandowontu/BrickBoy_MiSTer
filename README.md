@@ -18,7 +18,7 @@ The renderer operates at 640x576, four output pixels per native DMG dot, at the 
 - sealed-speaker and case-response simulation;
 - optional four-way D-pad shaping.
 
-Dead-line flicker is a MiSTer-only extension and defaults to Off. Vinegar syndrome is intentionally not included: the original BrickBoy implementation depends on a 2D fBm field and has not yet been published in the Pocket RTL, so an independently invented substitute would not be faithful.
+Dead-line flicker is a MiSTer-only extension and defaults to Off. Vinegar Syndrome is derived from BrickBoy's published original-software shader specification: its centre superellipse and blob patterns, seed, four-octave 2D fBm, coverage curve, colour, and pass position are preserved. The continuous depth control is represented by three MiSTer menu samples.
 
 ## Compatibility
 

@@ -46,6 +46,8 @@ module brick_video (
 	input  wire [2:0]  set_deadline,
 	input  wire [2:0]  set_grain,
 	input  wire        set_real,     // 0 = nostalgia palette, 1 = measured
+	input  wire [1:0]  set_vinegar,  // original screenRot sampled at .25/.50/1.0
+	input  wire        set_rot_blob, // original rotMode: centre or blobs
 	input  wire [1:0]  set_flicker,  // experimental dead-electrode instability
 
 	output reg         hs,
@@ -343,6 +345,17 @@ brick_grid grid (
 // ahead of the panel under it. Both terms vary over the whole screen and the
 // matte grain is white noise, so nothing about that is observable; delaying
 // two 10-bit counters through the grid pipeline would cost more than it buys.
+wire [23:0] vinegar_rgb;
+brick_vinegar vinegar (
+	.clk       ( clk_sys       ),
+	.gx        ( h_pre - GX0   ),
+	.gy        ( v - GY0       ),
+	.depth     ( set_vinegar   ),
+	.blob_mode ( set_rot_blob  ),
+	.in_rgb    ( grid_rgb      ),
+	.out_rgb   ( vinegar_rgb   )
+);
+
 wire [23:0] fin_rgb;
 brick_finish finish (
 	.clk     ( clk_sys  ),
@@ -354,17 +367,17 @@ brick_finish finish (
 	.set_ink_g  ( set_ink_g  ),
 	.set_ink_b  ( set_ink_b  ),
 	.set_refsat ( set_refsat ),
-	.in_rgb  ( grid_rgb ),
+	.in_rgb  ( vinegar_rgb ),
 	.out_rgb ( fin_rgb  )
 );
 
-// brick_grid adds 6 cycles and brick_finish 6, so de follows both
-reg [11:0] game_dly;
-always @(posedge clk_sys) game_dly <= {game_dly[10:0], p4_game};
+// brick_grid adds 6 cycles, brick_vinegar 3 and brick_finish 6.
+reg [14:0] game_dly;
+always @(posedge clk_sys) game_dly <= {game_dly[13:0], p4_game};
 
 always @(posedge clk_sys) begin
-	de  <= game_dly[11];
-	rgb <= game_dly[11] ? fin_rgb : 24'h000000;
+	de  <= game_dly[14];
+	rgb <= game_dly[14] ? fin_rgb : 24'h000000;
 
 	// MiSTer's scaler expects level-width sync pulses. The Pocket target accepts
 	// one-clock strobes, but a 30 ns VS strobe can be missed by the HDMI path.
