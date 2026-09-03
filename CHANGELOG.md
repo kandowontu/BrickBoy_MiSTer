@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Restore Vinegar Syndrome from BrickBoy's original-software shader rather
+  than the earlier invented approximation.
+- Add both original rot patterns: centre superellipse and irregular blobs.
+- Bake the original seeded four-octave fBm/coverage maps into a 96-bit-wide
+  M10K ROM and bilinearly reconstruct the 4x output.
+
 ## 0.3.0 - 2026-09-02
 
 - Reuse MiSTer's existing `Gameboy` content folder for ROMs, saves, palettes,
