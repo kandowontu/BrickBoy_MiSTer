@@ -49,6 +49,12 @@ module brick_video (
 	input  wire [1:0]  set_vinegar,  // original screenRot sampled at .25/.50/1.0
 	input  wire        set_rot_blob, // original rotMode: centre or blobs
 	input  wire [1:0]  set_flicker,  // experimental dead-electrode instability
+	input  wire [1:0]  set_grid,
+	input  wire [1:0]  set_shadow,
+	input  wire [1:0]  set_ghost,
+	input  wire [1:0]  set_gradient,
+	input  wire [1:0]  set_vignette,
+	input  wire [1:0]  set_matte,
 
 	output reg         hs,
 	output reg         vs,
@@ -159,6 +165,7 @@ brick_ghost ghost (
 	.in_row  ( cc_row  ),
 	.in_x    ( cc_x    ),
 	.in_rgb  ( cc_rgb  ),
+	.strength( set_ghost ),
 	.out_v   ( gh_v    ),
 	.out_x   ( gh_x    ),
 	.out_rgb ( gh_rgb  )
@@ -333,6 +340,8 @@ brick_grid grid (
 	.grain    ( grain_q  ),
 	.grain_k  ( grain_k  ),
 	.set_real ( set_real ),
+	.set_grid ( set_grid ),
+	.set_shadow ( set_shadow ),
 	.out_rgb  ( grid_rgb )
 );
 
@@ -367,6 +376,9 @@ brick_finish finish (
 	.set_ink_g  ( set_ink_g  ),
 	.set_ink_b  ( set_ink_b  ),
 	.set_refsat ( set_refsat ),
+	.set_gradient ( set_gradient ),
+	.set_vignette ( set_vignette ),
+	.set_matte    ( set_matte ),
 	.in_rgb  ( vinegar_rgb ),
 	.out_rgb ( fin_rgb  )
 );

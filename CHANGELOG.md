@@ -7,6 +7,9 @@
 - Add both original rot patterns: centre superellipse and irregular blobs.
 - Bake the original seeded four-octave fBm/coverage maps into a 96-bit-wide
   M10K ROM and bilinearly reconstruct the 4x output.
+- Add a `BrickBoy Optics` menu page for original grid strength, drop-shadow
+  opacity, LCD persistence, reflection gradient, corner vignette, and matte
+  grain. Each control defaults to the exact profile value.
 
 ## 0.3.0 - 2026-09-02
 

@@ -13,19 +13,20 @@ from the original BrickBoy software renderer.
 - dot grid and two-layer drop shadow
 - three-band reflector grain
 - final non-uniformity, matte grain, and vignette
+- menu controls for grid strength, drop-shadow opacity, persistence strength,
+  final gradient, matte grain, and vignette (all default to Original)
 - dead vertical and horizontal electrode lines (hardware-adapted placement)
 - Vinegar Syndrome centre-superellipse and blob patterns
 - sealed-speaker/case audio model
 
 ## Original controls not exposed yet
 
-- grid strength, dot fill, gap darkness, and shadow geometry
-- ghost strength, gamma, and gate
+- dot fill, gap darkness, and shadow geometry/blur
+- ghost gamma and gate
 - panel brightness, contrast, saturation, gamma, black lift, contrast dial,
   STN bleed, crosstalk amount/noise/banding, and cold-temperature response
 - panel dimming, frontlight gradient, backlight bleed, contrast fade, and dust
 - dead-line edge bias, stuck-dark ratio, and row ratio
-- final gradient, matte-grain, and vignette amounts
 
 These effects are present at their BrickBoy profile defaults where noted in
 the RTL; the missing item is menu adjustability, not necessarily the effect.
@@ -40,4 +41,3 @@ the RTL; the missing item is menu adjustability, not necessarily the effect.
   their optional flicker control is a MiSTer extension.
 - MiSTer panel trim, ink, reflector-saturation, rumble, and physical-controller
   behavior are platform controls rather than original BrickBoy parameters.
-
