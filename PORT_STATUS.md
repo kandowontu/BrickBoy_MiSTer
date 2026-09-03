@@ -19,6 +19,8 @@ from the original BrickBoy software renderer.
   Original)
 - panel dimming, frontlight gradient, backlight edge bleed, and contrast fade,
   with four source-parameter samples and Original defaults
+- seeded native-cell dust/blemish specks at the original thresholds and
+  quarter-brightness response
 - dead vertical and horizontal electrode lines (hardware-adapted placement)
 - Vinegar Syndrome centre-superellipse and blob patterns
 - sealed-speaker/case audio model
@@ -29,7 +31,6 @@ from the original BrickBoy software renderer.
 - ghost gamma and gate
 - panel brightness, contrast, saturation, gamma, black lift, contrast dial,
   STN bleed, crosstalk amount/noise/banding, and cold-temperature response
-- panel dust
 - dead-line edge bias, stuck-dark ratio, and row ratio
 
 These effects are present at their BrickBoy profile defaults where noted in
@@ -46,6 +47,8 @@ the RTL; the missing item is menu adjustability, not necessarily the effect.
   unchanged.
 - Backlight edge smoothstep uses a 16-entry fixed-point lookup table sampled
   from the original formula.
+- Dust decisions are baked from the original seed-7 hash into a packed 2-bit
+  native-cell ROM for the .25, .50, and 1.0 menu samples.
 - Dead lines are substituted before the grid so they remain electrode-shaped;
   their optional flicker control is a MiSTer extension.
 - MiSTer panel trim, ink, reflector-saturation, rumble, and physical-controller

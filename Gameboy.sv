@@ -123,6 +123,7 @@ localparam CONF_STR = {
 	"P7O[85:84],Frontlight Gradient,Off,Mild,Strong,Maximum;",
 	"P7O[87:86],Backlight Bleed,Off,Mild,Strong,Maximum;",
 	"P7O[89:88],Contrast Fade,Off,Mild,Strong,Maximum;",
+	"P7O[91:90],Dust Specks,Off,Mild,Strong,Maximum;",
 
     "P2,Bootroms;",
 	"P2-;",
@@ -911,6 +912,7 @@ brick_video brick_panel
 	.set_frontlight(status[85:84]),
 	.set_backlight(status[87:86]),
 	.set_contrast_fade(status[89:88]),
+	.set_dust     (status[91:90]),
 	.hs           (brick_hs),
 	.vs           (brick_vs),
 	.de           (brick_de),

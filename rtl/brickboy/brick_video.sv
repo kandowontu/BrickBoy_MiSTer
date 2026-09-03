@@ -62,6 +62,7 @@ module brick_video (
 	input  wire [1:0]  set_frontlight,
 	input  wire [1:0]  set_backlight,
 	input  wire [1:0]  set_contrast_fade,
+	input  wire [1:0]  set_dust,
 
 	output reg         hs,
 	output reg         vs,
@@ -388,6 +389,30 @@ brick_vinegar vinegar (
 	.out_rgb   ( vinegar_rgb   )
 );
 
+// Dust is cell-addressed, so unlike the low-frequency aging/rot fields its
+// coordinates must follow the colour pipeline exactly.
+reg [9:0] dust_x_dly [0:11];
+reg [9:0] dust_y_dly [0:11];
+integer dust_i;
+always @(posedge clk_sys) begin
+	dust_x_dly[0] <= h_pre - GX0;
+	dust_y_dly[0] <= v - GY0;
+	for (dust_i = 1; dust_i < 12; dust_i = dust_i + 1) begin
+		dust_x_dly[dust_i] <= dust_x_dly[dust_i-1];
+		dust_y_dly[dust_i] <= dust_y_dly[dust_i-1];
+	end
+end
+
+wire [23:0] dust_rgb;
+brick_dust dust (
+	.clk     ( clk_sys ),
+	.gx      ( dust_x_dly[11] ),
+	.gy      ( dust_y_dly[11] ),
+	.level   ( set_dust ),
+	.in_rgb  ( vinegar_rgb ),
+	.out_rgb ( dust_rgb )
+);
+
 wire [23:0] fin_rgb;
 brick_finish finish (
 	.clk     ( clk_sys  ),
@@ -402,17 +427,17 @@ brick_finish finish (
 	.set_gradient ( set_gradient ),
 	.set_vignette ( set_vignette ),
 	.set_matte    ( set_matte ),
-	.in_rgb  ( vinegar_rgb ),
+	.in_rgb  ( dust_rgb ),
 	.out_rgb ( fin_rgb  )
 );
 
-// brick_grid adds 6 cycles, brick_aging 3, brick_vinegar 3 and brick_finish 6.
-reg [17:0] game_dly;
-always @(posedge clk_sys) game_dly <= {game_dly[16:0], p4_game};
+// grid 6 + aging 3 + vinegar 3 + dust 2 + finish 6 = 20 cycles.
+reg [19:0] game_dly;
+always @(posedge clk_sys) game_dly <= {game_dly[18:0], p4_game};
 
 always @(posedge clk_sys) begin
-	de  <= game_dly[17];
-	rgb <= game_dly[17] ? fin_rgb : 24'h000000;
+	de  <= game_dly[19];
+	rgb <= game_dly[19] ? fin_rgb : 24'h000000;
 
 	// MiSTer's scaler expects level-width sync pulses. The Pocket target accepts
 	// one-clock strobes, but a 30 ns VS strobe can be missed by the HDMI path.
