@@ -17,6 +17,8 @@
 - Add a `BrickBoy Aging` page for the original panel dimming, frontlight
   gradient, backlight edge bleed, and contrast-fade stages. Each four-position
   control samples the source parameter and defaults to the original zero value.
+- Add original seeded dust/blemish specks after Vinegar, using the native-cell
+  hash thresholds and quarter-brightness response from `defects.slang`.
 
 ## 0.3.0 - 2026-09-02
 
