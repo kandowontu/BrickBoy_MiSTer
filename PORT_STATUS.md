@@ -21,20 +21,13 @@ from the original BrickBoy software renderer.
   with four source-parameter samples and Original defaults
 - seeded native-cell dust/blemish specks at the original thresholds and
   quarter-brightness response
-- dead vertical and horizontal electrode lines (hardware-adapted placement)
+- panel brightness, contrast, saturation, gamma, black lift, and contrast dial
+- STN bleed, crosstalk amount, column noise, edge banding, and cold response
+- selectable ghost gamma using exact forward and interpolated inverse curves
+- dead vertical and horizontal electrode lines with selectable edge bias,
+  stuck-dark ratio, and row ratio
 - Vinegar Syndrome centre-superellipse and blob patterns
 - sealed-speaker/case audio model
-
-## Original controls not exposed yet
-
-- shadow geometry/blur
-- ghost gamma and gate
-- panel brightness, contrast, saturation, gamma, black lift, contrast dial,
-  STN bleed, crosstalk amount/noise/banding, and cold-temperature response
-- dead-line edge bias, stuck-dark ratio, and row ratio
-
-These effects are present at their BrickBoy profile defaults where noted in
-the RTL; the missing item is menu adjustability, not necessarily the effect.
 
 ## Deliberately excluded or adapted
 
@@ -50,6 +43,13 @@ the RTL; the missing item is menu adjustability, not necessarily the effect.
 - Dust decisions are baked from the original seed-7 hash into a packed 2-bit
   native-cell ROM for the .25, .50, and 1.0 menu samples.
 - Dead lines are substituted before the grid so they remain electrode-shaped;
-  their optional flicker control is a MiSTer extension.
+  their optional flicker control is a MiSTer extension. The menu severity
+  levels are discrete hardware-useful samples of the continuous source value.
+- Air-gap depth selects discrete diagonal caster taps and shadow blur selects
+  discrete penumbra weights. This preserves the original default without the
+  extra full-colour framebuffer required for arbitrary shader geometry.
+- Ghost inverse-gamma tables use 512 samples with linear interpolation; the
+  original menu choice remains visually and numerically aligned at the
+  eight-bit input/output boundaries.
 - MiSTer panel trim, ink, reflector-saturation, rumble, and physical-controller
   behavior are platform controls rather than original BrickBoy parameters.

@@ -42,6 +42,7 @@ module brick_grid (
 	input  wire [1:0]  set_shadow,   // Original, off, half, strong
 	input  wire [1:0]  set_fill,
 	input  wire [1:0]  set_gap,
+	input  wire [1:0]  set_blur,
 
 	output reg  [23:0] out_rgb
 );
@@ -251,7 +252,10 @@ reg [7:0]  amt2;
 // the two layers into one and takes the depth cue with it.
 wire [7:0]  ss_near = LUT_SS_NEAR[near2];
 wire [7:0]  ss_far  = LUT_SS_FAR[far2];
-wire [9:0]  ss_sum  = {2'b0, ss_near} + (({2'b0, ss_far} * 10'd115) >> 8);   // + 0.45x
+wire [7:0] K_FAR = (set_blur == 2'd0) ? 8'd115 : // original broad penumbra .45
+	                  (set_blur == 2'd1) ? 8'd0   :
+	                  (set_blur == 2'd2) ? 8'd179 : 8'd255;
+wire [9:0]  ss_sum  = {2'b0, ss_near} + (({2'b0, ss_far} * K_FAR) >> 8);
 wire [7:0]  ss_cl   = (ss_sum > 10'd255) ? 8'd255 : ss_sum[7:0];
 wire [15:0] amt_w   = ss_cl * K_DROP;
 

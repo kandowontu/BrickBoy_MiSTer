@@ -19,6 +19,16 @@
   control samples the source parameter and defaults to the original zero value.
 - Add original seeded dust/blemish specks after Vinegar, using the native-cell
   hash thresholds and quarter-brightness response from `defects.slang`.
+- Add `BrickBoy Colour` and `BrickBoy STN` pages for the remaining source panel
+  tone, gamma, bleed, crosstalk, noise, banding, and temperature parameters.
+- Add air-gap depth, shadow softness, and selectable ghost-gamma controls;
+  retain exact forward gamma curves and interpolated 512-sample inverse curves.
+- Add dead-line edge-bias, stuck-dark, and row-rate controls generated from the
+  original deterministic salts and formulas. Correct the earlier row-mask
+  shortcut so rows no longer inherit column salts or edge bias.
+- Fit and time the complete candidate successfully in Quartus Prime Lite 17.0
+  at 28,714 ALMs, 471 RAM blocks, and 83 DSP blocks, with positive setup and
+  hold slack.
 
 ## 0.3.0 - 2026-09-02
 

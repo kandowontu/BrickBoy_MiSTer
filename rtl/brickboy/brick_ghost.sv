@@ -36,18 +36,24 @@ module brick_ghost (
 	input  wire [23:0] in_rgb,
 	input  wire [1:0]  strength, // Original, off, low, high
 	input  wire [1:0]  gate,     // Original, soft, hard, maximum
+	input  wire [1:0]  gamma,    // Original 2.2, linear, 1.6, 3.0
+	input  wire [1:0]  cold,     // source temperature samples 0, .25, .5, 1
 
 	output reg         out_v,
 	output reg  [7:0]  out_x,
 	output reg  [23:0] out_rgb
 );
 
-wire [7:0] A_RISE = (strength == 2'd0) ? 8'd61 :
-                    (strength == 2'd1) ? 8'd255 :
-                    (strength == 2'd2) ? 8'd100 : 8'd44;
-wire [7:0] A_FALL = (strength == 2'd0) ? 8'd139 :
-                    (strength == 2'd1) ? 8'd255 :
-                    (strength == 2'd2) ? 8'd195 : 8'd106;
+localparam bit [7:0] ALPHA_RISE[0:15] = '{
+	8'd61,8'd255,8'd101,8'd44, 8'd43,8'd255,8'd73,8'd30,
+	8'd33,8'd255,8'd57,8'd23,  8'd22,8'd255,8'd39,8'd15
+};
+localparam bit [7:0] ALPHA_FALL[0:15] = '{
+	8'd139,8'd255,8'd195,8'd106, 8'd104,8'd255,8'd157,8'd77,
+	8'd83,8'd255,8'd131,8'd60,   8'd59,8'd255,8'd97,8'd42
+};
+wire [7:0] A_RISE = ALPHA_RISE[{cold,strength}];
+wire [7:0] A_FALL = ALPHA_FALL[{cold,strength}];
 
 localparam bit [15:0] LUT_FWD22[0:255] = '{
   16'd0, 16'd0, 16'd2, 16'd4, 16'd7, 16'd11, 16'd17, 16'd24,
@@ -236,6 +242,15 @@ localparam bit [7:0] LUT_SNAP[0:255] = '{
 
 // 23040 x 24. Read at s0, written back at s2 - the same pixel is never
 // revisited inside that window, so no forwarding is needed.
+// Selectable source gamma tables. The inverse stores adjacent 512-sample
+// values as one 16-bit word so each colour channel needs only one ROM read.
+(* ramstyle = "M10K" *) reg [15:0] GHOST_FWD[0:1023];
+(* ramstyle = "M10K" *) reg [15:0] GHOST_INV[0:2047];
+initial begin
+	$readmemh("rtl/brickboy/brick_ghost_fwd.hex", GHOST_FWD);
+	$readmemh("rtl/brickboy/brick_ghost_inv.hex", GHOST_INV);
+end
+
 reg [23:0] gstate[0:23039];
 
 wire [14:0] addr = {in_row, 7'b0} + {2'b0, in_row, 5'b0} + in_x;
@@ -314,9 +329,9 @@ endfunction
 
 always @(posedge clk) begin
 	v1b <= v1a; x1b <= x1a; a1b <= a1a;
-	ftr <= LUT_FWD22[tr2]; fsr <= LUT_FWD22[sr2]; ar <= alpha_of(dark_r, snap_r);
-	ftg <= LUT_FWD22[tg2]; fsg <= LUT_FWD22[sg2]; ag <= alpha_of(dark_g, snap_r);
-	ftb <= LUT_FWD22[tb2]; fsb <= LUT_FWD22[sb2]; ab <= alpha_of(dark_b, snap_r);
+	ftr <= GHOST_FWD[{gamma,tr2}]; fsr <= GHOST_FWD[{gamma,sr2}]; ar <= alpha_of(dark_r, snap_r);
+	ftg <= GHOST_FWD[{gamma,tg2}]; fsg <= GHOST_FWD[{gamma,sg2}]; ag <= alpha_of(dark_g, snap_r);
+	ftb <= GHOST_FWD[{gamma,tb2}]; fsb <= GHOST_FWD[{gamma,sb2}]; ab <= alpha_of(dark_b, snap_r);
 end
 
 // s1b: the IIR step in transmittance space
@@ -343,30 +358,33 @@ end
 // s1c: inverse LUT fetch. The interpolation is a separate hop - a 2048-entry
 // LUT read followed by a multiply and an add is one gate level too many here.
 reg [7:0]  lor, hir, log_, hig, lob, hib;
-reg [4:0]  frr, frg, frb;
+reg [6:0]  frr, frg, frb;
 reg [14:0] a1d; reg [7:0] x1d; reg v1d;
 
-wire [10:0] ir = nr[15:5], ig = ng[15:5], ib = nb[15:5];
+wire [8:0] ir = nr[15:7], ig = ng[15:7], ib = nb[15:7];
+wire [15:0] invr = GHOST_INV[{gamma,ir}];
+wire [15:0] invg = GHOST_INV[{gamma,ig}];
+wire [15:0] invb = GHOST_INV[{gamma,ib}];
 
 always @(posedge clk) begin
 	v1d <= v1c; x1d <= x1c; a1d <= a1c;
-	lor <= LUT_INV22[ir]; hir <= (ir == 11'd2047) ? LUT_INV22[ir] : LUT_INV22[ir + 1'd1]; frr <= nr[4:0];
-	log_ <= LUT_INV22[ig]; hig <= (ig == 11'd2047) ? LUT_INV22[ig] : LUT_INV22[ig + 1'd1]; frg <= ng[4:0];
-	lob <= LUT_INV22[ib]; hib <= (ib == 11'd2047) ? LUT_INV22[ib] : LUT_INV22[ib + 1'd1]; frb <= nb[4:0];
+	lor <= invr[7:0]; hir <= invr[15:8]; frr <= nr[6:0];
+	log_ <= invg[7:0]; hig <= invg[15:8]; frg <= ng[6:0];
+	lob <= invb[7:0]; hib <= invb[15:8]; frb <= nb[6:0];
 end
 
 // s1d: interpolate
-function automatic [7:0] lerp5(input [7:0] lo, input [7:0] hi, input [4:0] f);
-	reg [12:0] d;
+function automatic [7:0] lerp7(input [7:0] lo, input [7:0] hi, input [6:0] f);
+	reg [14:0] d;
 	begin
 		d     = (hi - lo) * f;
-		lerp5 = lo + d[7:5];
+		lerp7 = lo + d[14:7];
 	end
 endfunction
 
 always @(posedge clk) begin
 	v2 <= v1d; x2 <= x1d; a2 <= a1d;
-	tgt2 <= { lerp5(lor, hir, frr), lerp5(log_, hig, frg), lerp5(lob, hib, frb) };
+	tgt2 <= { lerp7(lor, hir, frr), lerp7(log_, hig, frg), lerp7(lob, hib, frb) };
 end
 
 // s2: write the new state back and emit it

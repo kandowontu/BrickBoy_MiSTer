@@ -30,6 +30,17 @@ module brick_color (
 	input  wire [7:0]  row_disp,      // native row entering display
 	input  wire [2:0]  set_offtint,   // off-element tint; 2 = dmg.json's 0.1
 	input  wire        set_real,     // 0 = nostalgia palette, 1 = measured
+	input  wire [1:0]  set_brightness,
+	input  wire [1:0]  set_contrast,
+	input  wire [1:0]  set_saturation,
+	input  wire [1:0]  set_gamma,
+	input  wire [1:0]  set_blacklift,
+	input  wire [1:0]  set_density,
+	input  wire [1:0]  set_bleed,
+	input  wire [1:0]  set_xtalk,
+	input  wire [1:0]  set_xtnoise,
+	input  wire [1:0]  set_xtedge,
+	input  wire [1:0]  set_cold,
 
 	output reg  [14:0] fb_addr,
 	input  wire [1:0]  fb_q,
@@ -68,7 +79,9 @@ wire [23:0] PAL3 = set_real ? PAL3_R : PAL3_N;
 wire [23:0] PBG  = set_real ? PBG_R  : PBG_N;
 
 // Q0.8 constants (dmg.json x256)
-localparam [7:0] K_BLEED    = 8'd41;    // bleed 0.16
+wire [7:0] K_BLEED = (set_bleed == 2'd0) ? 8'd41 :  // original .16
+	                  (set_bleed == 2'd1) ? 8'd0  :
+	                  (set_bleed == 2'd2) ? 8'd20 : 8'd82;
 // offTint 0.1 x density 0.5 = 13. Runtime, because how much the off elements
 // still hold is the thing that decides whether the unlit part of the panel
 // reads as bare reflector or as an LC that never fully clears - and how much of
@@ -85,22 +98,48 @@ function automatic [7:0] k_offtint(input [2:0] i);
 		3'd7: k_offtint = 8'd64;
 	endcase
 endfunction
-localparam [7:0] K_XTALK    = 8'd44;    // crosstalk 0.34 x density 0.5
 localparam [7:0] K_XT_GRAY  = 8'd102;   // crosstalkGrayField 0.4
 localparam [7:0] K_XT_SIGN  = 8'd56;    // crosstalkSigned 0.22
 localparam [7:0] K_XT_CLAMP = 8'd166;   // darken clamp 0.65
-localparam [7:0] K_SAT      = 8'd218;   // saturation 0.85
+wire [8:0] K_SAT = (set_saturation == 2'd0) ? 9'd218 : // original .85
+	                 (set_saturation == 2'd1) ? 9'd0   :
+	                 (set_saturation == 2'd2) ? 9'd256 : 9'd384;
 localparam [7:0] K_WARM_R   = 8'd8;     // warm 0.06 x (0.5, 0.15, -0.4)
 localparam [7:0] K_WARM_G   = 8'd2;
 localparam [7:0] K_WARM_B   = 8'd6;     // subtracted
-localparam [7:0] K_CONTRAST = 8'd225;   // contrast 0.88 (both profiles)
-localparam [7:0] K_BRIGHT   = 8'd225;   // brightness 0.88, nostalgia only
-localparam [7:0] K_BLACKL   = 8'd26;    // blackLift 0.1
+wire [8:0] K_CONTRAST = (set_contrast == 2'd0) ? 9'd225 : // original .88
+	                      (set_contrast == 2'd1) ? 9'd166 :
+	                      (set_contrast == 2'd2) ? 9'd256 : 9'd320;
+wire [8:0] K_BRIGHT_N = (set_brightness == 2'd0) ? 9'd225 : // original .88
+	                      (set_brightness == 2'd1) ? 9'd166 :
+	                      (set_brightness == 2'd2) ? 9'd256 : 9'd320;
+wire [8:0] K_BRIGHT_R = (set_brightness == 2'd0) ? 9'd256 : // dmg-real original 1.0
+	                      (set_brightness == 2'd1) ? 9'd166 :
+	                      (set_brightness == 2'd2) ? 9'd256 : 9'd320;
+wire [7:0] K_BLACKL = (set_blacklift == 2'd0) ? 8'd26 : // original .10
+	                    (set_blacklift == 2'd1) ? 8'd0  :
+	                    (set_blacklift == 2'd2) ? 8'd64 : 8'd128;
 localparam [7:0] K_BETA_V   = 8'd235;   // exp(-1/12)
 localparam [7:0] K_WN_V     = 8'd20;    // 1 - exp(-1/12)
 localparam [7:0] K_BETA_H   = 8'd226;   // exp(-1/8)
 localparam [7:0] K_WN_H     = 8'd30;    // 1 - exp(-1/8)
-localparam [7:0] K_XT_EDGE  = 8'd102;   // crosstalkEdge 0.4
+wire [7:0] K_XT_EDGE = (set_xtedge == 2'd0) ? 8'd102 : // original .40
+	                     (set_xtedge == 2'd1) ? 8'd0   :
+	                     (set_xtedge == 2'd2) ? 8'd51  : 8'd204;
+
+wire [8:0] K_DENSITY = (set_density == 2'd0) ? 9'd128 : // original .50
+	                    (set_density == 2'd1) ? 9'd64  :
+	                    (set_density == 2'd2) ? 9'd192 : 9'd255;
+wire [8:0] K_XT_RAW = (set_xtalk == 2'd0) ? 9'd87 : // original .34
+	                   (set_xtalk == 2'd1) ? 9'd0  :
+	                   (set_xtalk == 2'd2) ? 9'd44 : 9'd174;
+wire [9:0] K_TEMP = (set_cold == 2'd0) ? 10'd256 : // 1 + 2*temperature
+	                 (set_cold == 2'd1) ? 10'd384 :
+	                 (set_cold == 2'd2) ? 10'd512 : 10'd768;
+wire [17:0] xt_density_w = K_XT_RAW * K_DENSITY;
+wire [27:0] xt_temp_w = xt_density_w * K_TEMP;
+wire [28:0] xt_temp_round = {1'b0, xt_temp_w} + 29'd32768;
+wire [11:0] K_XTALK_RUN = xt_temp_round[27:16];
 
 localparam byte unsigned LUT_GAMMA[0:255] = '{
   8'd0, 8'd1, 8'd1, 8'd2, 8'd3, 8'd3, 8'd4, 8'd5, 8'd6, 8'd6, 8'd7, 8'd8, 8'd9, 8'd10, 8'd10, 8'd11,
@@ -139,6 +178,11 @@ localparam byte unsigned LUT_OFFW[0:255] = '{
   8'd217, 8'd219, 8'd221, 8'd224, 8'd226, 8'd228, 8'd229, 8'd231, 8'd233, 8'd235, 8'd237, 8'd238, 8'd240, 8'd241, 8'd243, 8'd244,
   8'd245, 8'd246, 8'd248, 8'd249, 8'd250, 8'd251, 8'd251, 8'd252, 8'd253, 8'd253, 8'd254, 8'd254, 8'd255, 8'd255, 8'd255, 8'd255
 };
+
+// Four source-parameter samples: original 1.10, linear 1.0, 1.5 and 2.0.
+// Three simultaneous registered reads infer replicated M10K ROMs.
+(* ramstyle = "M10K" *) reg [7:0] COLOR_GAMMA [0:1023];
+initial $readmemh("rtl/brickboy/brick_color_gamma.hex", COLOR_GAMMA);
 
 
 function automatic [7:0] dsq(input [1:0] s);  // (shade/3)^2, Q0.8
@@ -448,6 +492,29 @@ always @(posedge clk) begin
 	if (f0_v) colA[f0_x] <= colA_new[21:8];
 end
 
+// f1d: physical contrast wheel. Density moves every cell together toward the
+// darkest LC shade or the bare reflector; .50 is neutral and is the default.
+reg [7:0] c1dr, c1dg, c1db;
+reg [9:0] field1d;
+reg [7:0] f1d_x; reg f1d_v;
+wire [7:0] dens_dark = (K_DENSITY > 9'd128) ?
+	((K_DENSITY == 9'd255) ? 8'd255 : (K_DENSITY - 9'd128) << 1) : 8'd0;
+wire [7:0] dens_light = (K_DENSITY < 9'd128) ? (9'd128 - K_DENSITY) << 1 : 8'd0;
+
+always @(posedge clk) begin
+	f1d_v <= f1_v; f1d_x <= f1_x;
+	field1d <= field1;
+	if (K_DENSITY > 9'd128) begin
+		c1dr <= mix8(c1r, PAL3[23:16], dens_dark);
+		c1dg <= mix8(c1g, PAL3[15:8],  dens_dark);
+		c1db <= mix8(c1b, PAL3[7:0],   dens_dark);
+	end else begin
+		c1dr <= mix8(c1r, PBG[23:16], dens_light);
+		c1dg <= mix8(c1g, PBG[15:8],  dens_light);
+		c1db <= mix8(c1b, PBG[7:0],   dens_light);
+	end
+end
+
 // f1b: luma, and the per-column crosstalk gain (#49).
 //
 // Feeding a 3-term dot product straight into a LUT and then into three
@@ -465,16 +532,19 @@ reg [7:0] f1b_x; reg f1b_v;
 
 `include "brick_xtalk_col.svh"
 
-wire signed [8:0]  xtn    = {XT_COL[f1_x][7], XT_COL[f1_x]};
-wire signed [19:0] xt_adj = $signed({10'b0, field1}) * xtn + 20'sd128;
-wire signed [11:0] xt_sum = $signed({2'b0, field1}) + xt_adj[19:8];
+wire signed [8:0] xtn_orig = {XT_COL[f1d_x][7], XT_COL[f1d_x]};
+wire signed [9:0] xtn_run = (set_xtnoise == 2'd1) ? 10'sd0 :
+	                         (set_xtnoise == 2'd2) ? (xtn_orig >>> 1) :
+	                         (set_xtnoise == 2'd3) ? (xtn_orig <<< 1) : xtn_orig;
+wire signed [20:0] xt_adj = $signed({10'b0, field1d}) * xtn_run + 21'sd128;
+wire signed [11:0] xt_sum = $signed({2'b0, field1d}) + xt_adj[20:8];
 
 always @(posedge clk) begin
-	f1b_v <= f1_v; f1b_x <= f1_x;
-	c1br <= c1r; c1bg <= c1g; c1bb <= c1b;
+	f1b_v <= f1d_v; f1b_x <= f1d_x;
+	c1br <= c1dr; c1bg <= c1dg; c1bb <= c1db;
 	field1b <= (xt_sum < 0) ? 10'd0 :
 	           (xt_sum > 12'sd1023) ? 10'd1023 : xt_sum[9:0];
-	luma1b <= luma8(c1r, c1g, c1b);
+	luma1b <= luma8(c1dr, c1dg, c1db);
 end
 
 // f2: offTint (density 0.5 folded into the constants)
@@ -482,7 +552,9 @@ reg [7:0]  c2r, c2g, c2b, luma2;
 reg [9:0]  field2;
 reg [7:0]  f2_x;  reg f2_v;
 
-wire [15:0] offm_w = k_offtint(set_offtint) * LUT_OFFW[luma1b] + 16'd128;
+wire [15:0] koff_density_w = k_offtint(set_offtint) * K_DENSITY;
+wire [8:0] koff_density = (koff_density_w[15:7] > 9'd255) ? 9'd255 : koff_density_w[15:7];
+wire [16:0] offm_w = koff_density[7:0] * LUT_OFFW[luma1b] + 17'd128;
 wire [7:0]  offm   = offm_w[15:8];
 
 always @(posedge clk) begin
@@ -506,10 +578,10 @@ wire [7:0]  mg    = (luma2 > 8'd128) ? 8'd255 - ((luma2 - 8'd128) << 1)
                                      : 8'd255 - ((8'd128 - luma2) << 1);
 wire [15:0] gry_w = K_XT_GRAY * mg;
 wire [8:0]  gryf  = (9'd255 - K_XT_GRAY) + gry_w[15:8];
-wire [17:0] amt0  = K_XTALK * field2;
-wire [26:0] amt1  = amt0 * gryf;
-wire [10:0] amt   = amt1[26:16];
-wire [7:0]  dk_w  = (amt > {3'b0, K_XT_CLAMP}) ? K_XT_CLAMP : amt[7:0];
+wire [21:0] amt0  = K_XTALK_RUN * field2;
+wire [30:0] amt1  = amt0 * gryf;
+wire [14:0] amt   = amt1[30:16];
+wire [7:0]  dk_w  = (amt > {7'b0, K_XT_CLAMP}) ? K_XT_CLAMP : amt[7:0];
 wire signed [8:0]  pol   = $signed({1'b0, luma2}) - 9'sd128;
 wire signed [24:0] sgn_w = $signed({1'b0, K_XT_SIGN}) * $signed({1'b0, dk_w}) * pol;
 
@@ -539,12 +611,16 @@ end
 reg [7:0] g3r, g3g, g3b, g3l;
 reg [7:0] f3b_x; reg f3b_v;
 
+wire [7:0] gamma_r = COLOR_GAMMA[{set_gamma, c3r}];
+wire [7:0] gamma_g = COLOR_GAMMA[{set_gamma, c3g}];
+wire [7:0] gamma_b = COLOR_GAMMA[{set_gamma, c3b}];
+
 always @(posedge clk) begin
 	f3b_v <= f3_v; f3b_x <= f3_x;
-	g3r <= LUT_GAMMA[c3r];
-	g3g <= LUT_GAMMA[c3g];
-	g3b <= LUT_GAMMA[c3b];
-	g3l <= luma8(LUT_GAMMA[c3r], LUT_GAMMA[c3g], LUT_GAMMA[c3b]);
+	g3r <= gamma_r;
+	g3g <= gamma_g;
+	g3b <= gamma_b;
+	g3l <= luma8(gamma_r, gamma_g, gamma_b);
 end
 
 // f4: saturation + warm
@@ -580,8 +656,8 @@ function automatic [7:0] tone(input [7:0] v);
 		// dmg-real's brightness is 1.0 - the owner matched the panel by eye at
 		// the end of the second measuring pass and needed no lift - so that
 		// profile skips the multiply outright rather than writing it as x256.
-		u = t * $signed({1'b0, K_BRIGHT}) + 18'sd128;
-		tone = set_real ? sat8(t) : sat8(u >>> 8);
+		u = t * $signed({1'b0, (set_real ? K_BRIGHT_R : K_BRIGHT_N)}) + 18'sd128;
+		tone = sat8(u >>> 8);
 	end
 endfunction
 
