@@ -40,6 +40,8 @@ module brick_grid (
 	input  wire        set_real,     // 0 = nostalgia palette, 1 = measured
 	input  wire [1:0]  set_grid,     // Original, off, low, full
 	input  wire [1:0]  set_shadow,   // Original, off, half, strong
+	input  wire [1:0]  set_fill,
+	input  wire [1:0]  set_gap,
 
 	output reg  [23:0] out_rgb
 );
@@ -80,6 +82,11 @@ wire [7:0] K_STR_ORIG = set_real ? 8'd255 : 8'd159;
 wire [7:0] K_STR = (set_grid == 2'd0) ? K_STR_ORIG :
                    (set_grid == 2'd1) ? 8'd0 :
                    (set_grid == 2'd2) ? 8'd128 : 8'd255;
+wire [7:0] K_GAP = (set_gap == 2'd0) ? 8'd255 :
+                   (set_gap == 2'd1) ? 8'd0 :
+                   (set_gap == 2'd2) ? 8'd128 : 8'd255;
+wire [15:0] K_GAP_STR_W = K_STR * K_GAP;
+wire [7:0] K_GAP_STR = K_GAP_STR_W[15:8];
 localparam [7:0] K_GRIDC  = 8'd243;   // grid contrast 0.95
 wire [7:0] K_DROP = (set_shadow == 2'd0) ? 8'd87 :
                     (set_shadow == 2'd1) ? 8'd0 :
@@ -146,10 +153,14 @@ localparam bit [7:0] LUT_SS_FAR[0:255] = '{
 // (tools/bb_render.mjs). Symmetric, so one axis table serves both.
 function automatic [7:0] axis_cov(input [1:0] s);
 	case (s)
-		2'd0: axis_cov = 8'd128;
+		2'd0: axis_cov = (set_fill == 2'd1) ? 8'd64 :
+		                 (set_fill == 2'd2) ? 8'd192 :
+		                 (set_fill == 2'd3) ? 8'd255 : 8'd128;
 		2'd1: axis_cov = 8'd255;
 		2'd2: axis_cov = 8'd255;
-		2'd3: axis_cov = 8'd128;
+		2'd3: axis_cov = (set_fill == 2'd1) ? 8'd64 :
+		                 (set_fill == 2'd2) ? 8'd192 :
+		                 (set_fill == 2'd3) ? 8'd255 : 8'd128;
 	endcase
 endfunction
 
@@ -221,9 +232,9 @@ always @(posedge clk) begin
 	base2 <= base1;
 	near2 <= near1;
 	far2  <= far1;
-	e_gap <= { mix8(base1[23:16], gcon(GAP_R), K_STR),
-	           mix8(base1[15:8],  gcon(GAP_G), K_STR),
-	           mix8(base1[7:0],   gcon(GAP_B), K_STR) };
+	e_gap <= { mix8(base1[23:16], gcon(GAP_R), K_GAP_STR),
+	           mix8(base1[15:8],  gcon(GAP_G), K_GAP_STR),
+	           mix8(base1[7:0],   gcon(GAP_B), K_GAP_STR) };
 	e_dot <= { mix8(base1[23:16], gcon(lit_r), K_STR),
 	           mix8(base1[15:8],  gcon(lit_g), K_STR),
 	           mix8(base1[7:0],   gcon(lit_b), K_STR) };

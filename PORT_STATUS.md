@@ -15,13 +15,15 @@ from the original BrickBoy software renderer.
 - final non-uniformity, matte grain, and vignette
 - menu controls for grid strength, drop-shadow opacity, persistence strength,
   final gradient, matte grain, and vignette (all default to Original)
+- menu controls for dot fill, gap darkness, and ghost gate (all default to
+  Original)
 - dead vertical and horizontal electrode lines (hardware-adapted placement)
 - Vinegar Syndrome centre-superellipse and blob patterns
 - sealed-speaker/case audio model
 
 ## Original controls not exposed yet
 
-- dot fill, gap darkness, and shadow geometry/blur
+- shadow geometry/blur
 - ghost gamma and gate
 - panel brightness, contrast, saturation, gamma, black lift, contrast dial,
   STN bleed, crosstalk amount/noise/banding, and cold-temperature response

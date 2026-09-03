@@ -55,6 +55,9 @@ module brick_video (
 	input  wire [1:0]  set_gradient,
 	input  wire [1:0]  set_vignette,
 	input  wire [1:0]  set_matte,
+	input  wire [1:0]  set_fill,
+	input  wire [1:0]  set_gap,
+	input  wire [1:0]  set_gate,
 
 	output reg         hs,
 	output reg         vs,
@@ -166,6 +169,7 @@ brick_ghost ghost (
 	.in_x    ( cc_x    ),
 	.in_rgb  ( cc_rgb  ),
 	.strength( set_ghost ),
+	.gate   ( set_gate ),
 	.out_v   ( gh_v    ),
 	.out_x   ( gh_x    ),
 	.out_rgb ( gh_rgb  )
@@ -342,6 +346,8 @@ brick_grid grid (
 	.set_real ( set_real ),
 	.set_grid ( set_grid ),
 	.set_shadow ( set_shadow ),
+	.set_fill ( set_fill ),
+	.set_gap ( set_gap ),
 	.out_rgb  ( grid_rgb )
 );
 

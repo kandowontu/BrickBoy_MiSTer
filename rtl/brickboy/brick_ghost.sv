@@ -35,6 +35,7 @@ module brick_ghost (
 	input  wire [7:0]  in_x,
 	input  wire [23:0] in_rgb,
 	input  wire [1:0]  strength, // Original, off, low, high
+	input  wire [1:0]  gate,     // Original, soft, hard, maximum
 
 	output reg         out_v,
 	output reg  [7:0]  out_x,
@@ -269,7 +270,11 @@ wire [7:0]  dr = absd(tr, sr);
 wire [7:0]  dg = absd(tg, sg);
 wire [7:0]  db = absd(tb, sb);
 wire [17:0] sumsq = dr*dr + dg*dg + db*db;
-wire [7:0]  snap  = (sumsq[17:10] != 8'd0) ? 8'd0 : LUT_SNAP[sumsq[9:2]];
+wire [7:0]  snap_raw  = (sumsq[17:10] != 8'd0) ? 8'd0 : LUT_SNAP[sumsq[9:2]];
+wire [7:0]  gate_scale = (gate == 2'd1) ? 8'd160 :
+                         (gate == 2'd2) ? 8'd224 : 8'd255;
+wire [15:0] snap_scaled = snap_raw * gate_scale;
+wire [7:0]  snap = (snap_raw == 8'd255) ? 8'd255 : snap_scaled[15:8];
 
 // s0b: the gate. Coming straight off the state RAM, the squared length plus
 // the LUT plus the alpha mix is one hop too many, so the gate gets its own.
