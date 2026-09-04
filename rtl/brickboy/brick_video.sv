@@ -48,6 +48,7 @@ module brick_video (
 	input  wire        set_real,     // 0 = nostalgia palette, 1 = measured
 	input  wire [1:0]  set_vinegar,  // original screenRot sampled at .25/.50/1.0
 	input  wire        set_rot_blob, // original rotMode: centre or blobs
+	input  wire [2:0]  set_rot_seed, // original unit seed, selectable blob layout
 	input  wire [1:0]  set_flicker,  // experimental dead-electrode instability
 	input  wire [1:0]  set_grid,
 	input  wire [1:0]  set_shadow,
@@ -425,6 +426,7 @@ brick_vinegar vinegar (
 	.gy        ( v - GY0       ),
 	.depth     ( set_vinegar   ),
 	.blob_mode ( set_rot_blob  ),
+	.seed_sel  ( set_rot_seed  ),
 	.in_rgb    ( aging_rgb     ),
 	.out_rgb   ( vinegar_rgb   )
 );

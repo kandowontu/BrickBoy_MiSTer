@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Add seven stable, source-authentic Vinegar blob layouts generated from the
+  original unit-seed mechanism, plus a repeatable `Reroll Vinegar Blobs`
+  action on the BrickBoy Panel page.
+- Add main-menu `Randomize BrickBoy` and `Reset BrickBoy Defaults` actions.
+  Randomize changes the visual/panel effects and also rerolls Vinegar; reset
+  restores all BrickBoy options while preserving unrelated core state.
+- Fit and time the seven-layout candidate successfully in Quartus Prime Lite
+  17.0 at 29,165 ALMs, 487 RAM blocks, and 87 DSP blocks, with +0.347 ns setup
+  and +0.228 ns hold slack.
+
 ## 0.4.0 - 2026-09-04
 
 - Restore Vinegar Syndrome from BrickBoy's original-software shader rather

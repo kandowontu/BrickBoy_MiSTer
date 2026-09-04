@@ -26,7 +26,8 @@ from the original BrickBoy software renderer.
 - selectable ghost gamma using exact forward and interpolated inverse curves
 - dead vertical and horizontal electrode lines with selectable edge bias,
   stuck-dark ratio, and row ratio
-- Vinegar Syndrome centre-superellipse and blob patterns
+- Vinegar Syndrome centre-superellipse and seven stable, rerollable blob
+  layouts using the original unit-seed mechanism
 - sealed-speaker/case audio model
 
 ## Deliberately excluded or adapted
@@ -36,9 +37,11 @@ from the original BrickBoy software renderer.
 - Module margin/mask trim is clipped in the default Fill presentation.
 - Persistence is stored at native resolution to fit FPGA memory.
 - Vinegar coverage uses direct 8-bit opacity at each unique sample node. Four
-  parity banks avoid storing shared cell corners twice; native cell corners
-  are bilinearly reconstructed across the 4x output, while geometry, depth
-  curves, and seeded patterns remain unchanged.
+  parity banks avoid storing shared cell corners twice. Centre is sampled at
+  native-dot nodes; the broad blob contours use half-native nodes so seven
+  complete original unit-seed layouts fit in block RAM. Both are bilinearly
+  reconstructed, while geometry, depth curves, and seed behavior remain
+  unchanged.
 - Backlight edge smoothstep uses a 16-entry fixed-point lookup table sampled
   from the original formula.
 - Dust decisions are baked from the original seed-7 hash into a packed 2-bit

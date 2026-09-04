@@ -19,16 +19,22 @@ The renderer operates at 640x576, four output pixels per native DMG dot, at the 
 - sealed-speaker and case-response simulation;
 - optional four-way D-pad shaping.
 
-Dead-line flicker is a MiSTer-only extension and defaults to Off. Vinegar Syndrome is derived from BrickBoy's published original-software shader specification: its centre superellipse and blob patterns, seed, four-octave 2D fBm, coverage curve, colour, and pass position are preserved. The continuous depth control is represented by three MiSTer menu samples.
+Dead-line flicker is a MiSTer-only extension and defaults to Off. Vinegar Syndrome is derived from BrickBoy's published original-software shader specification: its centre superellipse and blob patterns, unit seeds, four-octave 2D fBm, coverage curve, colour, and pass position are preserved. The continuous depth control is represented by three MiSTer menu samples. `Reroll Vinegar Blobs` selects another stable original unit-seed layout; the pattern never animates or boils between frames.
+
+The main menu also provides `Randomize BrickBoy`, which chooses a new stable
+combination of the panel-effect controls, and `Reset BrickBoy Defaults`, which
+restores every BrickBoy option without disturbing the loaded game or the
+core's mapper, boot, and save-state settings.
 
 The `BrickBoy Optics` page exposes original grid strength, drop-shadow
 opacity, LCD persistence, reflection gradient, corner vignette, and matte
 grain. Every setting defaults to `Original`, preserving the profile values.
 
 The Vinegar coverage ROM keeps eight bits of opacity at every unique sample
-node. Four parity banks avoid duplicating shared cell corners, and bilinear
-reconstruction across each native dot removes visible contour steps while
-preserving the original geometry, seed, patterns, and depth curves.
+node. Centre mode uses native-dot nodes; seven complete blob layouts use
+half-native nodes because their contours are broad. Four parity banks avoid
+duplicating shared cell corners, and bilinear reconstruction removes visible
+contour steps while preserving the original equations and depth curves.
 
 The `BrickBoy Detail` page adds source-stage controls for dot fill, gap
 darkness, and the persistence luminance gate. Their `Original` choices retain
@@ -73,8 +79,8 @@ quartus_sh --flow compile Gameboy
 
 The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy.rbf`; the build date is shown inside the MiSTer core menu.
 
-The current candidate uses 28,748 ALMs, 447 of 553 RAM blocks, and 85 DSP
-blocks. Quartus reports +0.197 ns worst-case setup slack and +0.250 ns
+The current candidate uses 29,165 ALMs, 487 of 553 RAM blocks, and 87 DSP
+blocks. Quartus reports +0.347 ns worst-case setup slack and +0.228 ns
 worst-case hold slack. The first public build was also tested on a DE10-Nano
 over HDMI; this candidate still requires hardware testing.
 

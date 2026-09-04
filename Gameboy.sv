@@ -75,6 +75,9 @@ localparam CONF_STR = {
 	"h3RS,Save state (Alt-F1);",
 	"h3RT,Restore state (F1);",
 	"-;",
+	"T[127],Randomize BrickBoy;",
+	"T[126],Reset BrickBoy Defaults;",
+	"-;",
 
 	"P1,Audio & Video;",
 	"P1-;",
@@ -100,6 +103,7 @@ localparam CONF_STR = {
 	"P4-;",
 	"P4O[35:34],Vinegar Syndrome,Off,Mild,Strong,Ruined;",
 	"P4O[11],Vinegar Pattern,Centre,Blobs;",
+	"P4T[31],Reroll Vinegar Blobs;",
 	"P4O[37:36],Dead-Line Flicker,Off,Subtle,Unstable,Severe;",
 	"P4OP,Fast Forward Sound,On,Off;",
 	"P4O[30],D-pad,8-way,4-way;",
@@ -213,6 +217,8 @@ pll pll
 ///////////////////////////////////////////////////
 
 wire [127:0] status;
+wire  [1:0] ss_slot;
+wire        statusUpdate;
 wire  [1:0] buttons;
 wire        forced_scandoubler;
 wire        direct_video;
@@ -253,6 +259,83 @@ wire        sys_megaduck = (status[15:14] == 3);
 
 wire        gbc_raw_colors = status[30];
 
+// BrickBoy menu actions. Blob layouts are stable: a new source-authentic unit
+// seed is chosen only at startup or when either randomize action is pressed.
+wire brick_random_req = status[127];
+wire brick_default_req = status[126];
+wire vinegar_reroll_req = status[31];
+
+reg [31:0] brick_rng = 32'h62726963;
+reg [2:0] vinegar_seed = 3'd4; // table index 4 is original unit seed 7
+reg rtc_seeded = 1'b0;
+wire rng_feedback = brick_rng[31] ^ brick_rng[21] ^ brick_rng[1] ^ brick_rng[0];
+
+function automatic [2:0] seed_mod7(input [2:0] n);
+	seed_mod7 = (n == 3'd7) ? 3'd0 : n;
+endfunction
+
+reg [2:0] next_vinegar_seed;
+always @(*) begin
+	next_vinegar_seed = seed_mod7(brick_rng[2:0] ^ brick_rng[18:16]);
+	if (next_vinegar_seed == vinegar_seed)
+		next_vinegar_seed = (vinegar_seed == 3'd6) ? 3'd0 : vinegar_seed + 1'd1;
+end
+
+always @(posedge clk_sys) begin
+	if (!rtc_seeded && |RTC_time) begin
+		brick_rng <= RTC_time[31:0] ^ 32'h9e3779b9;
+		vinegar_seed <= seed_mod7(RTC_time[2:0] ^ RTC_time[18:16]);
+		rtc_seeded <= 1'b1;
+	end else begin
+		brick_rng <= {brick_rng[30:0], rng_feedback};
+		if (brick_default_req) vinegar_seed <= 3'd4;
+		else if (brick_random_req || vinegar_reroll_req)
+			vinegar_seed <= next_vinegar_seed;
+	end
+end
+
+function automatic [127:0] brick_default_status(input [127:0] s);
+	reg [127:0] v;
+	begin
+		v = s;
+		v[6:1] = 0;
+		v[11] = 0;
+		v[25:18] = 0;
+		v[31:30] = 0;
+		v[38:34] = 0;
+		v[125:51] = 0;
+		v[127:126] = 0;
+		brick_default_status = v;
+	end
+endfunction
+
+function automatic [127:0] brick_random_status(input [127:0] s, input [31:0] r);
+	reg [127:0] v;
+	reg [31:0] r1, r2, r3;
+	begin
+		v = s;
+		r1 = {r[10:0], r[31:11]} ^ 32'h9e3779b9;
+		r2 = {r[22:0], r[31:23]} ^ 32'h7f4a7c15;
+		r3 = {r[4:0], r[31:5]} ^ 32'h6a09e667;
+		v[6:1] = r[5:0];
+		v[11] = r[6];
+		v[24:18] = r[13:7];
+		v[37:34] = r[17:14];
+		v[63:52] = r[29:18];
+		v[95:64] = r1;
+		v[125:96] = r2[29:0] ^ r3[29:0];
+		v[127:126] = 0;
+		brick_random_status = v;
+	end
+endfunction
+
+wire [127:0] normal_status_in = {status[127:34],ss_slot,status[31:0]};
+wire [127:0] brick_status_in =
+	brick_default_req ? brick_default_status(normal_status_in) :
+	brick_random_req  ? brick_random_status(normal_status_in, brick_rng) :
+	normal_status_in;
+wire brick_status_set = statusUpdate | brick_default_req | brick_random_req;
+
 hps_io #(.CONF_STR(CONF_STR), .WIDE(1)) hps_io
 (
 	.clk_sys(clk_sys),
@@ -284,8 +367,8 @@ hps_io #(.CONF_STR(CONF_STR), .WIDE(1)) hps_io
         gbc_raw_colors, fastboot_available,
         sys_megaduck, boot_gba_available, sgb_border_en, isGBC,
         cart_ready, sav_supported, |tint, gg_available}),
-	.status_in({status[127:34],ss_slot,status[31:0]}),
-	.status_set(statusUpdate),
+	.status_in(brick_status_in),
+	.status_set(brick_status_set),
 	.direct_video(direct_video),
 	.gamma_bus(gamma_bus),
 	.forced_scandoubler(forced_scandoubler),
@@ -923,6 +1006,7 @@ brick_video brick_panel
 	.set_real     (status[61]),
 	.set_vinegar (status[35:34]),
 	.set_rot_blob (status[11]),
+	.set_rot_seed (vinegar_seed),
 	.set_flicker  (status[37:36]),
 	.set_grid     (status[65:64]),
 	.set_shadow   (status[67:66]),
@@ -1099,10 +1183,8 @@ ddram ddram
 );
 
 // saving with keyboard/OSD/gamepad
-wire [1:0] ss_slot;
 wire [7:0] ss_info;
 wire ss_save, ss_load, ss_info_req;
-wire statusUpdate;
 
 savestate_ui savestate_ui
 (
