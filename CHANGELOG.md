@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 - 2026-09-04
 
 - Add seven stable, source-authentic Vinegar blob layouts generated from the
   original unit-seed mechanism, plus a repeatable `Reroll Vinegar Blobs`
