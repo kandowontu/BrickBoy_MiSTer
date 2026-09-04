@@ -5,14 +5,14 @@
 - Restore Vinegar Syndrome from BrickBoy's original-software shader rather
   than the earlier invented approximation.
 - Add both original rot patterns: centre superellipse and irregular blobs.
-- Bake the original seeded four-octave fBm/coverage maps into a 96-bit-wide
-  M10K ROM with four-bit corner opacity and bilinearly reconstruct the 4x
-  output.
+- Bake the original seeded four-octave fBm/coverage maps into four parity-banked
+  M10K ROMs with direct eight-bit opacity at each unique node, then bilinearly
+  reconstruct the 4x output without visible contour steps.
 - Add a `BrickBoy Optics` menu page for original grid strength, drop-shadow
   opacity, LCD persistence, reflection gradient, corner vignette, and matte
   grain. Each control defaults to the exact profile value.
-- Restore four-bit Vinegar coverage after testing showed that the temporary
-  three-bit storage experiment caused visible edge-level drift.
+- Replace the quantized Vinegar coverage experiments with direct eight-bit
+  opacity while using unique-node storage to reduce total block-memory use.
 - Add a `BrickBoy Detail` page for dot fill, gap darkness, and persistence gate
   controls, all defaulting to the source profile values.
 - Add a `BrickBoy Aging` page for the original panel dimming, frontlight
@@ -27,9 +27,9 @@
 - Add dead-line edge-bias, stuck-dark, and row-rate controls generated from the
   original deterministic salts and formulas. Correct the earlier row-mask
   shortcut so rows no longer inherit column salts or edge bias.
-- Fit and time the complete four-bit Vinegar candidate successfully in Quartus
-  Prime Lite 17.0 at 28,906 ALMs, 543 RAM blocks, and 83 DSP blocks, with
-  +0.518 ns setup and +0.246 ns hold slack.
+- Fit and time the complete eight-bit Vinegar candidate successfully in Quartus
+  Prime Lite 17.0 at 28,748 ALMs, 447 RAM blocks, and 85 DSP blocks, with
+  +0.197 ns setup and +0.250 ns hold slack.
 - Connect the existing reflector-grain menu level to the grain generator and
   widen its gain path so the 2x, 3x, and 4x choices no longer wrap.
 

@@ -2,8 +2,9 @@
 
 The equations and constants are a direct evaluation of FRAG_DEFECTS from
 kathoc/brickboy-dmg-shader.  Three MiSTer menu depths are sampled (0.25, 0.50,
-1.00), for both original rot modes.  Each native cell stores its four 4-bit
-corner opacities; RTL bilinearly expands them across the 4x4 output cell.
+1.00), for both original rot modes. Each unique native-grid node stores an
+8-bit opacity; four parity banks let RTL read a cell's four corners in one
+cycle and bilinearly expand them across the 4x4 output cell.
 """
 import math
 from pathlib import Path
@@ -70,7 +71,9 @@ def opacity(px, py, depth, mode):
             cover = max(cover, 1.0 - smoothstep(rad * 0.55, rad,
                                                 math.hypot(dx, dy)))
     op = cover * (0.45 + 0.5 * cover) * clamp(depth * 1.3, 0.0, 0.94)
-    return int(round(clamp(op, 0.0, 0.94) * 15.0 / 0.94))
+    # The hardware blend uses Q0.8 opacity. Preserve the shader's actual
+    # opacity rather than renormalising its 0.94 clamp to the integer range.
+    return int(round(clamp(op, 0.0, 0.94) * 256.0))
 
 
 def main():
@@ -78,23 +81,26 @@ def main():
     # Address order matches RTL: Centre depths first, then Blob depths.
     for mode in (1, 0):
         for depth in DEPTHS:
-            nodes = [[opacity(x, y, depth, mode) for x in range(W + 1)]
-                     for y in range(H + 1)]
-            for y in range(H):
-                for x in range(W):
-                    maps.append(nodes[y][x] | (nodes[y][x + 1] << 4) |
-                                (nodes[y + 1][x] << 8) |
-                                (nodes[y + 1][x + 1] << 12))
-    out = Path(__file__).parents[1] / "rtl" / "brickboy" / "brick_vinegar_map.hex"
-    with out.open("w", newline="\n") as f:
-        # Keep map selection in the WORD rather than the DEPTH.  A 23040x96
-        # ROM maps directly into parallel M10Ks; a 138240x16 ROM requires a
-        # very large bank decoder on Cyclone V even though the bit count is
-        # identical.
-        for cell in range(W * H):
-            word = sum(maps[m * W * H + cell] << (16 * m) for m in range(6))
-            f.write(f"{word:024x}\n")
-    print(f"wrote {W * H} 96-bit words to {out}")
+            maps.append([[opacity(x, y, depth, mode) for x in range(W + 1)]
+                         for y in range(H + 1)])
+
+    out_dir = Path(__file__).parents[1] / "rtl" / "brickboy"
+    for px, py, suffix in ((0, 0, "ee"), (1, 0, "eo"),
+                           (0, 1, "oe"), (1, 1, "oo")):
+        xs = range(px, W + 1, 2)
+        ys = range(py, H + 1, 2)
+        out = out_dir / f"brick_vinegar_map_{suffix}.hex"
+        words = 0
+        with out.open("w", newline="\n") as f:
+            for y in ys:
+                for x in xs:
+                    # Keep all six map samples in one 48-bit word. The four
+                    # parity banks provide the four simultaneous corner reads
+                    # without duplicating shared nodes between adjacent cells.
+                    word = sum(maps[m][y][x] << (8 * m) for m in range(6))
+                    f.write(f"{word:012x}\n")
+                    words += 1
+        print(f"wrote {words} 48-bit words to {out}")
 
 
 if __name__ == "__main__":
