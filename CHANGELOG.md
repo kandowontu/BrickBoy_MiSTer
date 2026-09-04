@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 - 2026-09-04
 
 - Restore Vinegar Syndrome from BrickBoy's original-software shader rather
   than the earlier invented approximation.
