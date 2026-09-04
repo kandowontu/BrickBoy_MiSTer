@@ -50,7 +50,10 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_grid.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_vinegar.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_aging.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/brickboy/brick_dust.sv
-set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map.hex
+set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map_ee.hex
+set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map_eo.hex
+set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map_oe.hex
+set_global_assignment -name HEX_FILE rtl/brickboy/brick_vinegar_map_oo.hex
 set_global_assignment -name HEX_FILE rtl/brickboy/brick_dust_map.hex
 set_global_assignment -name HEX_FILE rtl/brickboy/brick_color_gamma.hex
 set_global_assignment -name HEX_FILE rtl/brickboy/brick_ghost_fwd.hex
