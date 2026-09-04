@@ -6,12 +6,13 @@
   than the earlier invented approximation.
 - Add both original rot patterns: centre superellipse and irregular blobs.
 - Bake the original seeded four-octave fBm/coverage maps into a 96-bit-wide
-  M10K ROM and bilinearly reconstruct the 4x output.
+  M10K ROM with four-bit corner opacity and bilinearly reconstruct the 4x
+  output.
 - Add a `BrickBoy Optics` menu page for original grid strength, drop-shadow
   opacity, LCD persistence, reflection gradient, corner vignette, and matte
   grain. Each control defaults to the exact profile value.
-- Reduce Vinegar coverage storage from 96 to 72 bits per cell, recovering 72
-  M10Ks while retaining the original geometry and seeded patterns.
+- Restore four-bit Vinegar coverage after testing showed that the temporary
+  three-bit storage experiment caused visible edge-level drift.
 - Add a `BrickBoy Detail` page for dot fill, gap darkness, and persistence gate
   controls, all defaulting to the source profile values.
 - Add a `BrickBoy Aging` page for the original panel dimming, frontlight
@@ -26,9 +27,9 @@
 - Add dead-line edge-bias, stuck-dark, and row-rate controls generated from the
   original deterministic salts and formulas. Correct the earlier row-mask
   shortcut so rows no longer inherit column salts or edge bias.
-- Fit and time the complete candidate successfully in Quartus Prime Lite 17.0
-  at 28,688 ALMs, 471 RAM blocks, and 83 DSP blocks, with positive setup and
-  hold slack.
+- Fit and time the complete four-bit Vinegar candidate successfully in Quartus
+  Prime Lite 17.0 at 28,906 ALMs, 543 RAM blocks, and 83 DSP blocks, with
+  +0.518 ns setup and +0.246 ns hold slack.
 - Connect the existing reflector-grain menu level to the grain generator and
   widen its gain path so the 2x, 3x, and 4x choices no longer wrap.
 

@@ -35,9 +35,9 @@ from the original BrickBoy software renderer.
   original DMG profile.
 - Module margin/mask trim is clipped in the default Fill presentation.
 - Persistence is stored at native resolution to fit FPGA memory.
-- Vinegar coverage corners are stored at 3-bit precision and expanded onto the
-  original opacity lattice to save 72 M10Ks; geometry and seeded patterns are
-  unchanged.
+- Vinegar coverage corners retain the original 4-bit opacity lattice. Native
+  cell corners are bilinearly reconstructed across the 4x output; geometry,
+  depth curves, and seeded patterns are unchanged.
 - Backlight edge smoothstep uses a 16-entry fixed-point lookup table sampled
   from the original formula.
 - Dust decisions are baked from the original seed-7 hash into a packed 2-bit

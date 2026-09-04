@@ -25,9 +25,10 @@ The `BrickBoy Optics` page exposes original grid strength, drop-shadow
 opacity, LCD persistence, reflection gradient, corner vignette, and matte
 grain. Every setting defaults to `Original`, preserving the profile values.
 
-The Vinegar coverage ROM uses three bits per corner sample, expanded onto the
-same 0–15 opacity lattice in hardware. This saves 72 M10Ks while preserving
-the original geometry, seed, patterns, and depth curves.
+The Vinegar coverage ROM keeps four bits per corner sample on the original
+0–15 opacity lattice. This avoids the visible edge-level drift of the earlier
+three-bit storage experiment while preserving the original geometry, seed,
+patterns, and depth curves.
 
 The `BrickBoy Detail` page adds source-stage controls for dot fill, gap
 darkness, and the persistence luminance gate. Their `Original` choices retain
@@ -72,8 +73,8 @@ quartus_sh --flow compile Gameboy
 
 The generated bitstream is `output_files/Gameboy.rbf`. Release builds are renamed to `BrickBoy.rbf`; the build date is shown inside the MiSTer core menu.
 
-The current candidate uses 28,688 ALMs, 471 of 553 RAM blocks, and 83 DSP
-blocks. Quartus reports +0.376 ns worst-case setup slack and +0.185 ns
+The current candidate uses 28,906 ALMs, 543 of 553 RAM blocks, and 83 DSP
+blocks. Quartus reports +0.518 ns worst-case setup slack and +0.246 ns
 worst-case hold slack. The first public build was also tested on a DE10-Nano
 over HDMI; this candidate still requires hardware testing.
 
