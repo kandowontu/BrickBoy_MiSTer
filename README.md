@@ -93,3 +93,6 @@ This repository is GPL-3.0-or-later as a combined work. Individual files retain 
 - Open bootstrap ROM sources retain their upstream notices in [`BootROMs/`](BootROMs/).
 
 This is an independently maintained MiSTer port. It is not maintained or hardware-tested by the Pocket core author.
+
+For complete upstream attribution, copyright holders, third-party components,
+and license notes, see [`CREDITS.md`](CREDITS.md).
