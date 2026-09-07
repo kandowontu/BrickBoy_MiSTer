@@ -2,7 +2,7 @@
 
 BrickBoy MiSTer brings the DMG LCD panel and sealed-speaker model from [kathoc/brickboy-dmg-fpgacore](https://github.com/kathoc/brickboy-dmg-fpgacore) to the MiSTer FPGA platform. The core uses the current [MiSTer-devel/Gameboy_MiSTer](https://github.com/MiSTer-devel/Gameboy_MiSTer) framework. Its MiSTer content identifier remains `GAMEBOY`, so ROMs, palettes, borders, boot ROMs, and saves use the existing `Gameboy` folder.
 
-This core was created with the use of Codex/GPT 5.6 Sol.
+This core was created with the use of Codex/GPT 5.6 Sol. The original BrickBoy core was created using Claude.
 
 ## Install
 
