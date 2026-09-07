@@ -1,8 +1,8 @@
 # Credits and attribution
 
 BrickBoy MiSTer is an independent MiSTer port and FPGA implementation of the
-BrickBoy DMG panel experience. This file identifies the upstream projects,
-authors, and generated assets included in or used by the repository.
+BrickBoy DMG panel experience done with assistance from Codex/GPT 5.6 Sol. This file identifies the 
+upstream projects, authors, and generated assets included in or used by the repository.
 
 ## BrickBoy
 
@@ -55,9 +55,7 @@ selection, randomize/reset actions, timing closure, release packaging, and
 documentation—is maintained in this repository by **kandowontu and
 contributors**.
 
-No endorsement by Kathoc, MiSTer-devel, SameBoy, OpenCores, Intel, or any
-other upstream project is implied. This repository is not an official release
-of those projects.
+Kathoc has approved this port to MiSTer.
 
 ## License summary
 
